@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "run_id": "2026-07-01T09-14",
+  "roadmap": "ROADMAP.md",
+  "range": [1, 4],
+  "current": 3,
+  "status": "hard_stop",
+  "stop_reason": "gate: WEATHER_API_KEY inválida no passo 03 (401 em api.openweathermap.org — o valor no .env é o placeholder do .env.example). Pega a chave em https://home.openweathermap.org/api_keys, põe no .env e roda /go resume.",
+  "nudges": 0,
+  "steps": {
+    "1": {
+      "status": "merged",
+      "branch": "go/01-scaffold-painel",
+      "pr": 1,
+      "sha": "3f8a21c",
+      "attempts": 1,
+      "last_error": null,
+      "decisions": [
+        "painel = HTML estático servido pelo próprio FastAPI em vez de framework front — 1 passo, zero build; reverta se o painel crescer"
+      ]
+    },
+    "2": {
+      "status": "merged",
+      "branch": "go/02-ingestao-csv",
+      "pr": 2,
+      "sha": "b07c94e",
+      "attempts": 2,
+      "last_error": null,
+      "decisions": [
+        "CSV real usa vírgula decimal e datas dd/mm/aaaa — parser normaliza pt-BR em vez de exigir ISO; regressão em tests/test_ingest.py::test_decimal_virgula (protocolo /fix, verde na 2ª tentativa)"
+      ]
+    },
+    "3": {
+      "status": "failed",
+      "branch": "go/03-conector-clima",
+      "pr": null,
+      "sha": null,
+      "attempts": 1,
+      "last_error": "GET api.openweathermap.org/data/2.5/... → 401 Unauthorized. WEATHER_API_KEY presente no .env mas com o valor placeholder do .env.example. Gate, não bug: sem chave real não existe fix. Código do conector pronto e commitado na branch; /go resume re-roda o Aceite.",
+      "decisions": []
+    },
+    "4": {
+      "status": "pending",
+      "branch": null,
+      "pr": null,
+      "sha": null,
+      "attempts": 0,
+      "last_error": null,
+      "decisions": []
+    }
+  },
+  "started_at": "2026-07-01T09:14:02-03:00",
+  "updated_at": "2026-07-01T09:56:12-03:00"
+}

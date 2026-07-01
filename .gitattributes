@@ -1,0 +1,14 @@
+# Finais de linha consistentes cross-platform.
+# Texto = LF no repo E no working tree (o validate.mjs e o frontmatter das
+# skills esperam LF; autocrlf do Windows quebrava o parse no checkout —
+# lição herdada do Forger).
+* text=auto eol=lf
+
+# PowerShell: os .ps1 deste repo são ASCII-only de propósito (PS 5.1 lê
+# UTF-8 sem BOM como ANSI — sem acento, não há o que corromper). LF é ok.
+
+# Binários — nunca normalizar.
+*.png binary
+*.gif binary
+*.jpg binary
+*.ico binary

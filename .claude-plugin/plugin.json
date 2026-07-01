@@ -1,0 +1,9 @@
+{
+  "name": "katana",
+  "version": "1.0.0",
+  "description": "3 comandos de Claude Code (PT-BR) para o dev solo: /plan desenha o mapa (ROADMAP executável). /go dirige até o fim — commita, abre PR, se auto-revisa e mergeia; só para se faltar chave ou for perigoso. /fix quando quebra. Sucessor do Forger: 17 comandos viraram 3.",
+  "author": {
+    "name": "Marcelover777",
+    "url": "https://github.com/Marcelover777"
+  }
+}
