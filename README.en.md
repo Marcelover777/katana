@@ -1,3 +1,9 @@
+<p align="center">
+  <a href="https://github.com/Marcelover777/katana">
+    <img src="assets/banner.gif" alt="Katana — /plan draws the map · /goal drives to the end · /fix when it breaks" width="100%">
+  </a>
+</p>
+
 # KATANA
 
 **Plan > Vibes. Three commands: /plan draws the map, /goal drives to the end, /fix when it breaks.**
