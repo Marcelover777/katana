@@ -1,6 +1,6 @@
 ---
 name: fix
-description: Bug morre com método — feedback loop <10s primeiro, hipóteses falsificáveis, um probe por hipótese, regressão antes do fix, cleanup. Modo rápido para trivial; modo autônomo quando o /go chama. Use com "/fix", "tem um bug", "quebrou", "dá esse erro" ou stack trace colado.
+description: Bug morre com método — feedback loop <10s primeiro, hipóteses falsificáveis, um probe por hipótese, regressão antes do fix, cleanup. Modo rápido para trivial; modo autônomo quando o /goal chama. Use com "/fix", "tem um bug", "quebrou", "dá esse erro" ou stack trace colado.
 ---
 
 # /fix — Bug morre com método, não com tentativa
@@ -60,15 +60,15 @@ Remova logs `[DEBUG-*]`, delete probes, confirme que o repro original não repro
 - **2 ciclos sem progresso → pare** (interativo apenas). Apresente o que foi descartado e o que aprendeu. Pergunte ao usuário antes do 3º ciclo — domain knowledge dele vale mais que sua próxima teoria.
 - **O fix muda behavior público?** Avise antes de aplicar (interativo apenas) — pode ser que o "bug" fosse contrato que alguém depende.
 
-## Modo autônomo (chamado pelo /go)
+## Modo autônomo (chamado pelo /goal)
 
 Mesmo loop, transporte diferente — ninguém está olhando, então nada de esperar resposta:
 
 - **Nunca pergunte, nunca espere resposta.** As regras interativas — "mostre a lista ao usuário", "pergunte antes do 3º ciclo", "avise antes de aplicar" — NÃO se aplicam aqui: decida, registre em `decisions[]` e siga.
 - **Ranqueie sozinho** (item 3 do loop): probabilidade × custo de descartar. Adote a própria recomendação e registre em `decisions[]` do `.katana/state.json`.
-- **Máx 3 ciclos** hipótese→probe→fix. Verde → devolva o controle ao /go (ele re-roda o Aceite do passo). 3º ciclo morto → parada dura: grave `last_error` + hipóteses descartadas com a evidência de cada probe. O relatório é instrução de retomada, não "estou perdido".
+- **Máx 3 ciclos** hipótese→probe→fix. Verde → devolva o controle ao /goal (ele re-roda o Aceite do passo). 3º ciclo morto → parada dura: grave `last_error` + hipóteses descartadas com a evidência de cada probe. O relatório é instrução de retomada, não "estou perdido".
 - **Bug fora do escopo do passo atual** (outro módulo, vizinho suspeito): NÃO conserta agora. Vira passo novo no ROADMAP.md — Objetivo observável = o achado, Aceite = o inverso verificável dele. Fila única; consertar "já que achou" é como run autônomo vira deriva.
-- **Cleanup antes do verde**: probes `[DEBUG-*]` fora ANTES de devolver o controle — o grep de restos do /go pega o que sobrar, e resto novo no diff = passo não está verde.
+- **Cleanup antes do verde**: probes `[DEBUG-*]` fora ANTES de devolver o controle — o grep de restos do /goal pega o que sobrar, e resto novo no diff = passo não está verde.
 
 ## Anti-padrões
 
@@ -87,4 +87,4 @@ Ao fechar, reporte em até 5 linhas:
 - **Regressão:** <teste adicionado / por que não>
 - **Vizinhos:** <algo suspeito notado no caminho — mencionado, NÃO corrigido; no modo autônomo, já registrado como passo no ROADMAP.md>
 
-Próxima ação: interativo → commit `fix(<área>): <causa>` e volte ao que fazia (fix que pede redesenho → `/plan`). Chamado pelo /go → devolva o controle; o runner re-roda o Aceite e o run segue.
+Próxima ação: interativo → commit `fix(<área>): <causa>` e volte ao que fazia (fix que pede redesenho → `/plan`). Chamado pelo /goal → devolva o controle; o runner re-roda o Aceite e o run segue.

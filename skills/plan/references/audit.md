@@ -34,11 +34,11 @@ Dispara quando há código e não há `ROADMAP.md`. Lê stack, código e git; di
 - **Aceite = o inverso verificável do achado.** Detectou `.env` rastreado → Aceite: `git ls-files .env` vazio. Detectou 0 testes em `src/auth` → Aceite: suíte de auth existe e passa. Todo passo semeado nasce com done grep-ável.
 - **Prioridade:** segurança e quebrado primeiro; o resto por dependência real, não por gravidade abstrata.
 - Melhoria de produto que surgir no diagnóstico vira passo normal, com objetivo observável — não "item de dívida" numa lista paralela (fila única).
-- **Remédio destrutivo/irreversível** (rotacionar segredo vazado, reescrever histórico, deletar dado): o passo descreve o remédio e declara no corpo que exige confirmação humana — o /go trata como parada dura. Nunca execute inline durante o diagnóstico.
+- **Remédio destrutivo/irreversível** (rotacionar segredo vazado, reescrever histórico, deletar dado): o passo descreve o remédio e declara no corpo que exige confirmação humana — o /goal trata como parada dura. Nunca execute inline durante o diagnóstico.
 
 ## Anti-padrões
 
-- ❌ Consertar durante o diagnóstico — o audit lê; quem executa é o /go, passo a passo, com Aceite.
+- ❌ Consertar durante o diagnóstico — o audit lê; quem executa é o /goal, passo a passo, com Aceite.
 - ❌ ✅ presumido quando a ferramenta não rodou, ou ❌ fora de maturidade — as duas mentiras simétricas.
 - ❌ Achado de arquitetura/UI sem âncora `arquivo:linha`.
 - ❌ Nota global do projeto — cada dimensão tem a própria régua; média esconde o ❌ que importa.

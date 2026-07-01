@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "katana",
-  "description": "Marketplace da Katana — a lâmina do dev solo, em PT-BR: /plan desenha o mapa, /go dirige até o fim, /fix quando quebra.",
+  "description": "Marketplace da Katana — a lâmina do dev solo, em PT-BR: /plan desenha o mapa, /goal dirige até o fim, /fix quando quebra.",
   "owner": {
     "name": "Marcelover777",
     "url": "https://github.com/Marcelover777"
@@ -9,7 +9,7 @@
   "plugins": [
     {
       "name": "katana",
-      "description": "3 comandos: /plan desenha o mapa (ROADMAP executável), /go dirige até o fim (loop autônomo com PRs mergeados e paradas duras enumeradas), /fix quando quebra.",
+      "description": "3 comandos: /plan desenha o mapa (ROADMAP executável), /goal dirige até o fim (loop autônomo com PRs mergeados e paradas duras enumeradas), /fix quando quebra.",
       "source": "./",
       "category": "productivity"
     }

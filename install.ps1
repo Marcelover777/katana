@@ -4,8 +4,8 @@
 # PS 5.1 le UTF-8 sem BOM como ANSI, entao este arquivo nao usa acento).
 #
 # Copia skills/ para <alvo>\.claude\skills\ e hooks/ (*.js + README.md, o
-# manual de registro que o /go setup replica) para <alvo>\.claude\hooks\.
-# NAO registra hooks em settings.json - isso e trabalho do /go setup, que pede
+# manual de registro que o /goal setup replica) para <alvo>\.claude\hooks\.
+# NAO registra hooks em settings.json - isso e trabalho do /goal setup, que pede
 # permissao dentro do proprio projeto. Copiar e inofensivo; ativar e opt-in.
 #
 # Uso:
@@ -93,7 +93,7 @@ try {
         New-Item -ItemType Directory -Force -Path $destHooks | Out-Null
         Write-Host "==> Copiando hooks em: $destHooks"
         # *.js + README.md: o README leva os 3 blocos JSON canonicos de
-        # registro - sem ele no disco, o /go setup teria que inventar o shape.
+        # registro - sem ele no disco, o /goal setup teria que inventar o shape.
         Get-ChildItem -Path $srcHooks -File |
             Where-Object { $_.Extension -eq '.js' -or $_.Name -eq 'README.md' } |
             ForEach-Object {
@@ -108,12 +108,12 @@ try {
     Write-Host ''
     Write-Host 'Pronto.'
     Write-Host ''
-    Write-Host '  /plan desenha o mapa. /go dirige ate o fim. /fix quando quebra.'
+    Write-Host '  /plan desenha o mapa. /goal dirige ate o fim. /fix quando quebra.'
     Write-Host ''
     if ($HooksCopied) {
         Write-Host 'Os hooks foram copiados mas NAO registrados (nenhum settings.json foi tocado).'
     }
-    Write-Host 'Rode /go setup no projeto para ativar a autonomia: registra os hooks,'
+    Write-Host 'Rode /goal setup no projeto para ativar a autonomia: registra os hooks,'
     Write-Host 'a allowlist git/gh e o gitignore de .katana/.'
 }
 finally {

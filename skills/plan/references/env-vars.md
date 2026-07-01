@@ -1,7 +1,7 @@
 # ENV-VARS — catálogo canônico de nomes de env var
 
 > **Fonte única da verdade dos NOMES de env var** que a Katana reconhece. Citado pelo
-> /plan (gera o `.env.example` e os campos `Gate:` do ROADMAP) e pelo /go (confere o
+> /plan (gera o `.env.example` e os campos `Gate:` do ROADMAP) e pelo /goal (confere o
 > `.env` no preflight — só nomes, nunca valores).
 >
 > **Regra de ouro:** use só os nomes desta lista. Serviço fora dela → abra a doc oficial,
@@ -41,6 +41,6 @@ Var com prefixo de framework é embutida no bundle do browser — **não é segr
 
 ## Anti-padrões
 
-- ❌ Inventar nome de env var fora desta lista (ou da doc oficial do serviço) — o gate do /go confere nome a nome; nome fantasma = parada dura falsa.
+- ❌ Inventar nome de env var fora desta lista (ou da doc oficial do serviço) — o gate do /goal confere nome a nome; nome fantasma = parada dura falsa.
 - ❌ Marcar como pública uma var sem prefixo de framework.
 - ❌ Ecoar valor de env var em qualquer saída — só o nome importa; onde pegar e pricing vivem em [stack-matrix.md](stack-matrix.md) e no `.env.example`.

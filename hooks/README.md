@@ -12,10 +12,10 @@ state, e mais nada.
 | `katana-continue.js` | `Stop` | Run `running` com etapa pendente → **bloqueia** a devolução do turno ("continue de onde parou") e incrementa `nudges` no state. 3 nudges sem progresso → deixa parar e marca `hard_stop`/`stalled`. |
 | `katana-guard.js` | `PreToolUse` (Bash) | **Nega mecanicamente** a lista destrutiva via `permissionDecision:"deny"`. Force-push, deletar main/master remota (`push --delete`/refspec `:main`), `reset --hard`, `clean -f`: sempre. O resto (rebase -i, `branch -D main` local, `rm -rf` fora do repo, filter-branch/+refspec, commit em main): só com run ativo. |
 
-## Como o /go setup os registra
+## Como o /goal setup os registra
 
 `install.ps1` / `install.sh` só **copiam** os arquivos para `.claude/hooks/` —
-copiar não ativa nada. Quem ativa é o **`/go setup`** (1x por repo), gravando
+copiar não ativa nada. Quem ativa é o **`/goal setup`** (1x por repo), gravando
 exatamente estes três registros no `.claude/settings.json` do projeto:
 
 ```json
@@ -52,7 +52,7 @@ aponta para a raiz do projeto — o registro funciona mesmo com a sessão aberta
 num subdiretório, nos dois SOs. (Fallback: o caminho relativo
 `node .claude/hooks/katana-guard.js` também funciona, mas SÓ quando a sessão
 abre na raiz — fora dela o hook falha em silêncio. Prefira a env var.)
-Instalou com `-Global` (hooks em `~/.claude/hooks/`)? O `/go setup` detecta e
+Instalou com `-Global` (hooks em `~/.claude/hooks/`)? O `/goal setup` detecta e
 grava o caminho absoluto correspondente no lugar.
 
 ## katana-session-start.js — continuidade que não cobra pedágio
@@ -61,8 +61,8 @@ O problema clássico: injetar o log inteiro a cada sessão custa contexto
 permanente. Aqui a injeção é proporcional ao que existe:
 
 - **Run no meio** (`running` ou `hard_stop`): uma linha —
-  `katana: run /go ATIVO — passo 3 de [1..5] (failed, tentativa 2). …` —
-  com a ação sugerida (`/go resume`) e o `stop_reason` truncado (que carrega o
+  `katana: run /goal ATIVO — passo 3 de [1..5] (failed, tentativa 2). …` —
+  com a ação sugerida (`/goal resume`) e o `stop_reason` truncado (que carrega o
   gate pendente, se houver: só o NOME da env var, nunca valor).
 - **Sem run**: a cauda do `.katana/LOG.md`, cap 8 KB, recomeçando em fronteira
   de bloco `\n## ` para nunca cortar um bloco no meio.
@@ -71,7 +71,7 @@ permanente. Aqui a injeção é proporcional ao que existe:
 ## katana-continue.js — o modelo não devolve o turno no meio do run
 
 Se o modelo tentar encerrar o turno com run `running` e etapa pendente, o hook
-responde `{"decision":"block","reason":"Run /go ativo: etapa K (status).
+responde `{"decision":"block","reason":"Run /goal ativo: etapa K (status).
 Continue de onde parou; releia .katana/state.json e o ROADMAP.md."}` — e o
 Claude Code re-injeta a continuação.
 
@@ -80,13 +80,13 @@ grava `nudges+1` e um fingerprint de progresso (`etapa|status|attempts`) no
 state. **3 nudges com o MESMO fingerprint** → o hook não bloqueia mais: marca
 `hard_stop` com `stop_reason="stalled: …"` e deixa a sessão parar. A decisão
 é sempre por fingerprint — fingerprint diferente = progresso real, e o
-bloqueio continua valendo não importa quantos nudges já houve (o runner /go
+bloqueio continua valendo não importa quantos nudges já houve (o runner /goal
 também zera `nudges` a cada transição de status), então um run longo e
 saudável pode ser re-injetado quantas vezes precisar. E o hook **só bloqueia
 se conseguiu persistir o nudge** — contador que não sobe seria bloqueio que
 nunca expira.
 
-`/go stop` (kill switch) marca `status=stopped` → o hook libera na hora.
+`/goal stop` (kill switch) marca `status=stopped` → o hook libera na hora.
 
 ## katana-guard.js — deny é força bruta, não pedido educado
 
@@ -100,15 +100,15 @@ negativo custa histórico. Limitação conhecida (documentada no header do hook)
 flag escondida em variável de shell (`F=--force; git push $F`) não é detectada
 — o guard é cinto contra deriva do modelo, não sandbox.
 
-O deny volta como erro para o modelo, e o SKILL.md do /go trata deny do guard
+O deny volta como erro para o modelo, e o SKILL.md do /goal trata deny do guard
 como **parada dura** — nunca contorno. O guard nunca executa nada: a única
 coisa que ele sabe fazer é dizer não.
 
-## Filosofia: copiar é inofensivo, ativar é opt-in explícito (/go setup)
+## Filosofia: copiar é inofensivo, ativar é opt-in explícito (/goal setup)
 
 - **Copiar é inofensivo**: `install.ps1`/`install.sh` não tocam em
   `settings.json`. Hook copiado e não registrado é arquivo morto.
-- **Registrar é opt-in explícito**: `/go setup`, uma vez por repo, com o diff
+- **Registrar é opt-in explícito**: `/goal setup`, uma vez por repo, com o diff
   do settings.json na sua frente.
 - Depois de registrados: session-start e continue só leem (+ 1 write contado
   no próprio `.katana/`); o guard só **nega** — negar é o modo seguro de
@@ -121,7 +121,7 @@ coisa que ele sabe fazer é dizer não.
    `.claude/settings.json` do projeto (ou só o bloco do hook indesejado).
 2. Apague `.claude/hooks/katana-*.js`.
 
-Sem os hooks o /go continua funcionando, degradado: sem `continue` o modelo
-pode devolver o turno no meio (use `/go resume`); sem `guard` a lista
+Sem os hooks o /goal continua funcionando, degradado: sem `continue` o modelo
+pode devolver o turno no meio (use `/goal resume`); sem `guard` a lista
 destrutiva vira só instrução de prompt; sem `session-start` a sessão nova não
 recebe contexto de continuidade.

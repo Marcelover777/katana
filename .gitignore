@@ -11,7 +11,7 @@ node_modules/
 # e DEVEM ser versionados — só tmp/ fica de fora.
 **/.katana/tmp/
 
-# Locks de teste do runner headless (go.ps1)
+# Locks de teste do runner headless (goal.ps1)
 *.lock
 
 # Logs / SO / editores

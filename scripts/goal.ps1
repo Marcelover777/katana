@@ -1,14 +1,14 @@
 #requires -version 5
 <#
-  Katana - runner headless do /go (overnight, Windows PowerShell 5.1+).
-  Contrato completo: skills/go/references/headless.md.
+  Katana - runner headless do /goal (overnight, Windows PowerShell 5.1+).
+  Contrato completo: skills/goal/references/headless.md.
 
-  Roda as etapas -From..-To com UMA invocacao `claude -p "/go step K"` por
+  Roda as etapas -From..-To com UMA invocacao `claude -p "/goal step K"` por
   etapa, conferindo o veredito no .katana/state.json apos cada volta. A
-  inteligencia mora na skill /go; este script invoca, confere e PARA no
+  inteligencia mora na skill /goal; este script invoca, confere e PARA no
   primeiro sinal ruim.
 
-  Uso: powershell -NoProfile -ExecutionPolicy Bypass -File scripts\go.ps1 `
+  Uso: powershell -NoProfile -ExecutionPolicy Bypass -File scripts\goal.ps1 `
          -From 3 -To 5 [-MaxMinutesPerStep 45]
 
   Regras (licoes das geracoes anteriores, bugs corrigidos):
@@ -20,7 +20,7 @@
     - error_max_turns sem merged = 1 retry da MESMA etapa; depois PARA;
     - hard_stop|stopped = PARA com o stop_reason; done com K<To mergeada =
       so o sub-run [K,K] fechou, segue para K+1;
-    - lock .katana/tmp/go.lock (caminho gitignorado pelo /go setup) em
+    - lock .katana/tmp/goal.lock (caminho gitignorado pelo /goal setup) em
       try/finally; Write em UTF-8 SEM BOM; sem &&; sem 2>&1 em exe nativo
       (com -MaxMinutesPerStep, o stderr do claude vai para arquivo em
       .katana/tmp/ DENTRO do job - runspace novo, EAP=Continue, nao promove -
@@ -51,15 +51,15 @@ $runDir    = (Get-Location).Path
 $katana    = Join-Path $runDir '.katana'
 $tmpDir    = Join-Path $katana 'tmp'
 $statePath = Join-Path $katana 'state.json'
-# Lock dentro de .katana/tmp/ - caminho que o /go setup gitignora; um lock na
+# Lock dentro de .katana/tmp/ - caminho que o /goal setup gitignora; um lock na
 # raiz de .katana/ apareceria como untracked e mataria o preflight de arvore
-# limpa do /go step.
-$lock      = Join-Path $tmpDir 'go.lock'
+# limpa do /goal step.
+$lock      = Join-Path $tmpDir 'goal.lock'
 
 New-Item -ItemType Directory -Force -Path $tmpDir | Out-Null
 if (Test-Path $lock) {
     Write-Host "ERRO: ja existe um run headless (ou um morto sujo): $lock"
-    Write-Host '      Confira se ha outro go.ps1 vivo; residuo se apaga a mao.'
+    Write-Host '      Confira se ha outro goal.ps1 vivo; residuo se apaga a mao.'
     exit 1
 }
 
@@ -77,7 +77,7 @@ $retriedMaxTurns = $false   # 1 retry por etapa em error_max_turns; zera no merg
 try {
     $timeoutTxt = 'sem timeout'
     if ($MaxMinutesPerStep -gt 0) { $timeoutTxt = "$MaxMinutesPerStep min/etapa" }
-    Write-Host "==> Katana headless: etapas $From..$To ($timeoutTxt). Kill switch: /go stop (ou apague o lock e Ctrl+C)."
+    Write-Host "==> Katana headless: etapas $From..$To ($timeoutTxt). Kill switch: /goal stop (ou apague o lock e Ctrl+C)."
 
     for ($k = $From; $k -le $To; $k++) {
         $modo = 'sessao nova'
@@ -85,7 +85,7 @@ try {
         Write-Host ''
         Write-Host "--- etapa $k de ${To} ($modo) ---"
 
-        $cliArgs = @('-p', "/go step $k", '--output-format', 'json', '--permission-mode', 'acceptEdits')
+        $cliArgs = @('-p', "/goal step $k", '--output-format', 'json', '--permission-mode', 'acceptEdits')
         if ($sid) { $cliArgs += @('--resume', $sid) }
 
         # Invoca o claude; com -MaxMinutesPerStep, dentro de um Job com Wait -Timeout.
@@ -102,7 +102,7 @@ try {
             if ($null -eq $done) {
                 Stop-Job -Job $job
                 Remove-Job -Job $job -Force
-                $stop = "timeout de etapa ($MaxMinutesPerStep min) na etapa $k - confira processos claude orfaos e o estado com /go resume"
+                $stop = "timeout de etapa ($MaxMinutesPerStep min) na etapa $k - confira processos claude orfaos e o estado com /goal resume"
                 break
             }
             try { $out = Receive-Job -Job $job -ErrorAction SilentlyContinue } catch { $out = $null }
@@ -161,8 +161,8 @@ finally {
 Write-Host ''
 if ($stop) {
     Write-Host "==> Katana headless PAROU: $stop"
-    Write-Host '    Estado em .katana/state.json; retomada: /go resume (interativo) ou re-rode este script.'
+    Write-Host '    Estado em .katana/state.json; retomada: /goal resume (interativo) ou re-rode este script.'
     exit 1
 }
-Write-Host "==> Katana headless: etapas $From..$To mergeadas. Revise os PRs; proximo: /go $($To + 1)."
+Write-Host "==> Katana headless: etapas $From..$To mergeadas. Revise os PRs; proximo: /goal $($To + 1)."
 exit 0

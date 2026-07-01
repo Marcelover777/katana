@@ -5,7 +5,7 @@
 //   1. `.katana/state.json` com run ativo (status running|hard_stop) → injeta
 //      UMA linha de estado (~55 tokens): passo atual/faixa, status do passo,
 //      tentativas, ação sugerida e o stop_reason (gate pendente, se houver).
-//      A sessão nova nasce sabendo que existe um run /go no meio — sem pagar
+//      A sessão nova nasce sabendo que existe um run /goal no meio — sem pagar
 //      um log inteiro de contexto.
 //   2. Sem run ativo → injeta a CAUDA do `.katana/LOG.md` (cap 8 KB, corte em
 //      fronteira de bloco `\n## `): o log é append-only, o estado mais
@@ -76,8 +76,8 @@ function stateLine(state) {
 
   if (status === 'running') {
     return (
-      `katana: run /go ATIVO — passo ${cur} de ${faixa} (${stepStatus}, tentativa ${attempts}). ` +
-      `Continue o run de onde parou: releia .katana/state.json e o ROADMAP.md (retomada explícita: /go resume).`
+      `katana: run /goal ATIVO — passo ${cur} de ${faixa} (${stepStatus}, tentativa ${attempts}). ` +
+      `Continue o run de onde parou: releia .katana/state.json e o ROADMAP.md (retomada explícita: /goal resume).`
     );
   }
 
@@ -86,8 +86,8 @@ function stateLine(state) {
   let reason = oneLine(state.stop_reason) || 'sem stop_reason registrado';
   if (reason.length > MAX_REASON_CHARS) reason = reason.slice(0, MAX_REASON_CHARS - 1) + '…';
   return (
-    `katana: run /go PARADO (hard_stop) no passo ${cur} de ${faixa} (${stepStatus}, tentativa ${attempts}) — ` +
-    `${reason} Ação: resolva e rode /go resume.`
+    `katana: run /goal PARADO (hard_stop) no passo ${cur} de ${faixa} (${stepStatus}, tentativa ${attempts}) — ` +
+    `${reason} Ação: resolva e rode /goal resume.`
   );
 }
 

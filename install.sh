@@ -2,8 +2,8 @@
 #
 # Katana — instalador POSIX.
 # Copia skills/ para <alvo>/.claude/skills/ e hooks/ (*.js + README.md, o
-# manual de registro que o /go setup replica) para <alvo>/.claude/hooks/.
-# NÃO registra hooks em settings.json — isso é trabalho do /go setup, que pede
+# manual de registro que o /goal setup replica) para <alvo>/.claude/hooks/.
+# NÃO registra hooks em settings.json — isso é trabalho do /goal setup, que pede
 # permissão dentro do próprio projeto. Copiar é inofensivo; ativar é opt-in.
 #
 # Uso:
@@ -91,7 +91,7 @@ if [ -d "$SOURCE_DIR/hooks" ]; then
   mkdir -p "$DEST_HOOKS"
   echo "==> Copiando hooks em: $DEST_HOOKS"
   # *.js + README.md: o README leva os 3 blocos JSON canônicos de registro —
-  # sem ele no disco, o /go setup teria que inventar o shape.
+  # sem ele no disco, o /goal setup teria que inventar o shape.
   for f in "$SOURCE_DIR"/hooks/*.js "$SOURCE_DIR/hooks/README.md"; do
     [ -e "$f" ] || continue
     cp -f "$f" "$DEST_HOOKS/$(basename "$f")"
@@ -104,10 +104,10 @@ fi
 echo ""
 echo "Pronto."
 echo ""
-echo "  /plan desenha o mapa. /go dirige até o fim. /fix quando quebra."
+echo "  /plan desenha o mapa. /goal dirige até o fim. /fix quando quebra."
 echo ""
 if [ "$HOOKS_COPIED" -eq 1 ]; then
   echo "Os hooks foram copiados mas NÃO registrados (nenhum settings.json foi tocado)."
 fi
-echo "Rode /go setup no projeto para ativar a autonomia: registra os hooks,"
+echo "Rode /goal setup no projeto para ativar a autonomia: registra os hooks,"
 echo "a allowlist git/gh e o gitignore de .katana/."

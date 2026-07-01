@@ -1,6 +1,6 @@
-# ROADMAP.md — o mapa que o /go executa
+# ROADMAP.md — o mapa que o /goal executa
 
-Salvar na **raiz** do projeto. Escrito pelo /plan; executado pelo /go (cada passo vira um PR "Etapa NN — título"). O `[ ]` no título do passo é a verdade do progresso — **só o /go marca `[x]`**, com Aceite verde; o `[x]` só chega ao main via merge do PR da etapa (o /go o commita na própria branch, nunca direto em main). Passos inline: não existe pasta de detalhes separada.
+Salvar na **raiz** do projeto. Escrito pelo /plan; executado pelo /goal (cada passo vira um PR "Etapa NN — título"). O `[ ]` no título do passo é a verdade do progresso — **só o /goal marca `[x]`**, com Aceite verde; o `[x]` só chega ao main via merge do PR da etapa (o /goal o commita na própria branch, nunca direto em main). Passos inline: não existe pasta de detalhes separada.
 
 ---
 
@@ -59,7 +59,7 @@ Demo (60s): <...>
 - **Passo = fatia demoável, não micro-tarefa.** Uma feature ponta a ponta (schema → API → UI → teste), ~5-12 passos no total. Vertical, nunca por camada.
 - **Numeração estável.** Nunca renumere um passo criado — commits, PRs e o LOG referenciam o número. Passo novo SEMPRE entra no fim da fila, com o próximo número; a ordem real de execução é expressa via `Depende de:`.
 - **Primeiro passo sem gate.** Algo visível antes de qualquer chave — motivação antes de fricção.
-- **Gate = nomes exatos de env var**, separados por vírgula, ou `Nenhum`. Nomes do catálogo (`references/env-vars.md`) ou da doc oficial. O /go coleta os gates da faixa inteira e confere o `.env` de uma vez, no preflight.
+- **Gate = nomes exatos de env var**, separados por vírgula, ou `Nenhum`. Nomes do catálogo (`references/env-vars.md`) ou da doc oficial. O /goal coleta os gates da faixa inteira e confere o `.env` de uma vez, no preflight.
 - **Aceite mecânico.** Comando/grep/test que roda sem julgamento humano. É o que destrava o merge — Aceite fraco = lixo verde mergeado.
 - **Demo (60s).** Se não dá pra escrever, o passo não tem pronto observável.
 - **Fila única.** Follow-up, bug achado depois, ideia nova: vira passo novo AQUI. Não existe backlog paralelo, icebox nem segunda lista.

@@ -1,9 +1,9 @@
 ---
-name: go
-description: Dirige o ROADMAP.md do passo N ao M sem parar — branch, implementa, valida, PR, self-review, merge, próximo. Só para em parada dura. /go sem args = painel. Use para /go, "faz da etapa X até a Y", "roda o roadmap", "continua de onde parou", "não para até terminar".
+name: goal
+description: Dirige o ROADMAP.md do passo N ao M sem parar — branch, implementa, valida, PR, self-review, merge, próximo. Só para em parada dura. /goal sem args = painel. Use para /goal, "faz da etapa X até a Y", "roda o roadmap", "continua de onde parou", "não para até terminar".
 ---
 
-# /go — dirige até o fim
+# /goal — dirige até o fim
 
 A regra é continuar; parar é exceção enumerada. **AUTONOMIA = f(VERIFICAÇÃO):** quem destrava
 cada merge é o Aceite mecânico verde — nunca opinião, sua ou de review LLM. Ambiguidade de
@@ -12,7 +12,7 @@ do state.json e no corpo do PR ("Decisão: X porque Y — reverta se discordar")
 
 Input: `ROADMAP.md` na raiz (passos `## NN — Título [ ]` com Objetivo/Gate/Depende de/Tasks/
 Aceite/Demo; passo L traz a linha `Plano: .katana/plans/NN-<slug>.md`).
-O /go consome o mapa, não cria — sem ROADMAP.md, o mapa nasce no /plan.
+O /goal consome o mapa, não cria — sem ROADMAP.md, o mapa nasce no /plan.
 Estado: `.katana/state.json` (schema completo em [references/headless.md](references/headless.md)),
 log em `.katana/LOG.md`, efêmeros em `.katana/tmp/`.
 
@@ -20,20 +20,20 @@ log em `.katana/LOG.md`, efêmeros em `.katana/tmp/`.
 
 | Comando | Faz |
 |---|---|
-| `/go` | painel de status — só lê, não executa |
-| `/go 3` | roda o passo 3 |
-| `/go 1..5` | roda os passos 1 a 5 sem devolver o turno entre eles |
-| `/go all` | do primeiro `[ ]` até o fim do ROADMAP |
-| `/go 3..5 --dry` | plano de voo: o que faria, branches, gates que vai bater — só leitura, zero execução |
-| `/go resume` | retoma do state.json reconciliando com GitHub/git — que ganham do JSON |
-| `/go step K` | forma headless de `/go K`: NENHUMA pergunta (Aceite ausente → deriva e declara no PR; o que exigiria pergunta → parada dura); estende o range do state — regras em [references/headless.md](references/headless.md) |
-| `/go stop` | kill switch: `status=stopped` no state.json (o Stop hook libera o turno) |
-| `/go setup` | 1x por repo: allowlist git/gh no `.claude/settings.json`, registra os hooks `katana-*` (os 3 blocos JSON exatos estão no hooks/README.md do repo Katana — replique-os), gitignora `.katana/tmp/` e `.katana/state.json` |
+| `/goal` | painel de status — só lê, não executa |
+| `/goal 3` | roda o passo 3 |
+| `/goal 1..5` | roda os passos 1 a 5 sem devolver o turno entre eles |
+| `/goal all` | do primeiro `[ ]` até o fim do ROADMAP |
+| `/goal 3..5 --dry` | plano de voo: o que faria, branches, gates que vai bater — só leitura, zero execução |
+| `/goal resume` | retoma do state.json reconciliando com GitHub/git — que ganham do JSON |
+| `/goal step K` | forma headless de `/goal K`: NENHUMA pergunta (Aceite ausente → deriva e declara no PR; o que exigiria pergunta → parada dura); estende o range do state — regras em [references/headless.md](references/headless.md) |
+| `/goal stop` | kill switch: `status=stopped` no state.json (o Stop hook libera o turno) |
+| `/goal setup` | 1x por repo: allowlist git/gh no `.claude/settings.json`, registra os hooks `katana-*` (os 3 blocos JSON exatos estão no hooks/README.md do repo Katana — replique-os), gitignora `.katana/tmp/` e `.katana/state.json` |
 | `--worktree` | o run inteiro num worktree dedicado (UM, reutilizado, `.env` copiado) — [references/git-ritual.md](references/git-ritual.md) |
 
-Overnight sem sessão aberta: `scripts/go.ps1` — [references/headless.md](references/headless.md).
+Overnight sem sessão aberta: `scripts/goal.ps1` — [references/headless.md](references/headless.md).
 
-## /go sem args — painel honesto
+## /goal sem args — painel honesto
 
 Derive tudo de arquivo real: contagem de `[x]` só nos títulos de passo do ROADMAP.md
 (`## NN — … [x]`, nunca checkbox de task), state.json, `git log` + `gh pr list`.
@@ -42,7 +42,7 @@ Nunca de memória de sessão.
 - Célula sem sinal real = **⏭️ sem dado** — nunca ✅ presumido, nunca número inventado.
 - % = passos `[x]` ÷ total, arredondado PRA BAIXO.
 - Run ativo ou parado → mostre etapa, status, tentativas, `stop_reason`.
-- Última linha, sempre: `próximo: /go N — <título>` (+ aviso do gate que N vai bater, se houver).
+- Última linha, sempre: `próximo: /goal N — <título>` (+ aviso do gate que N vai bater, se houver).
 
 ## PREFLIGHT — o único momento que pode perguntar
 
@@ -62,21 +62,21 @@ Depois dele, silêncio até o fim. Se houver perguntas, TODAS numa mensagem só.
    Faltou qualquer chave → pare AGORA com o bloco:
 
    ```
-   ❌ Falta configurar antes do run (/go 3..5):
+   ❌ Falta configurar antes do run (/goal 3..5):
 
    - SUPABASE_URL e SUPABASE_ANON_KEY → Supabase → Settings → API Keys   (passo 03)
    - STRIPE_SECRET_KEY → https://dashboard.stripe.com/apikeys            (passo 05)
 
-   Pega as chaves, põe no .env (modelo em .env.example), e rode de novo: /go 3..5.
+   Pega as chaves, põe no .env (modelo em .env.example), e rode de novo: /goal 3..5.
    ```
 
    Nunca avance um passo bloqueado. Sem chave → sem execução. Sem exceção silenciosa.
    Cheque também as dependências: todo `Depende de:` de cada passo da faixa precisa estar
    `[x]` no ROADMAP ou vir ANTES dele dentro da própria faixa. Senão → lote único de perguntas
-   ("o passo 04 depende do 02, pendente e fora da faixa — incluo o 02 (vira /go 2..5) ou
-   paro?"); em `/go step` (headless, sem perguntas) → **PARADA DURA** no preflight.
+   ("o passo 04 depende do 02, pendente e fora da faixa — incluo o 02 (vira /goal 2..5) ou
+   paro?"); em `/goal step` (headless, sem perguntas) → **PARADA DURA** no preflight.
    Vão no mesmo lote de perguntas: passo sem Aceite mecânico (interativo: proponha no lote;
-   headless `/go step`: derive e declare no PR body) e repo sem remote (criar no GitHub ou
+   headless `/goal step`: derive e declare no PR body) e repo sem remote (criar no GitHub ou
    mergear local?).
 5. Escreva o state.json (`status=running`, range, `current=N`). Anuncie o plano de voo em
    ≤5 linhas e DECOLE.
@@ -87,7 +87,7 @@ Comandos git/gh exatos de cada letra: [references/git-ritual.md](references/git-
 Cada passo começa relendo state.json + a seção do passo no ROADMAP — refresh determinístico;
 compaction não te perde.
 
-a. `git checkout -b go/KK-<slug> main`.
+a. `git checkout -b goal/KK-<slug> main`.
 b. Execute TODAS as tasks do passo (passo com linha `Plano:` → as tasks vêm de `.katana/plans/NN-<slug>.md`):
    - Leia os arquivos-alvo ANTES de editar. Exploração pesada → subagente (preserva o contexto
      do turno).
@@ -117,7 +117,7 @@ e. FECHAMENTO (ship interno):
      (`.only(` = suite sabotada; `sk_live_`/`AKIA` = segredo → remova ANTES de qualquer push);
    - lente de segurança SÓ nos arquivos tocados: segredo hardcoded, input externo sem validação,
      endpoint novo sem auth onde os vizinhos têm, dado sensível em log.
-f. `git push -u origin go/KK-<slug>` → `gh pr create` (título `Etapa KK — <título>`; body: o que
+f. `git push -u origin goal/KK-<slug>` → `gh pr create` (título `Etapa KK — <título>`; body: o que
    fez, Aceite rodado COM output, decisões). Commit de registro na MESMA branch: passo `[x]` no
    ROADMAP.md + bloco no LOG.md (o que mudou/arquivos/verificação/próximo) → push. O registro
    viaja dentro do PR — nada é commitado direto em main. Então SELF-REVIEW adversarial via
@@ -130,7 +130,7 @@ g. Repo TEM CI → `gh pr checks --watch` com timeout; sem CI → local-verde de
 h. O `[x]` e o LOG já chegaram ao main via merge. Aqui: atualize state.json (`merged`, pr, sha;
    `current=K+1`; `nudges=0` — zere a cada transição de status de step, não só no merge) e
    imprima UMA linha:
-   `[go 3/5] etapa 03 mergeada — PR #12 (2 tentativas, 14 min)`
+   `[goal 3/5] etapa 03 mergeada — PR #12 (2 tentativas, 14 min)`
    K == M → RELATÓRIO FINAL. Senão → (a), imediatamente.
 
 Verificação visual/UI nunca para o loop: rode o smoke mecânico possível e jogue o resto na fila
@@ -154,12 +154,12 @@ Verificação visual/UI nunca para o loop: rode o smoke mecânico possível e jo
    (Ambiguidade de implementação não é contradição — decida e registre.)
 6. Preflight sujo/vermelho.
 7. Caps: 3 nudges do Stop hook sem progresso (stall), ou timeout de etapa (só headless:
-   `-MaxMinutesPerStep` do `scripts/go.ps1`).
+   `-MaxMinutesPerStep` do `scripts/goal.ps1`).
 
 Ao parar: state.json (`hard_stop`, `stop_reason`, `last_error`) + 1 bloco dizendo o que falta e
-como retomar (`/go resume`).
+como retomar (`/goal resume`).
 
-**AUTORIZADO por definição** — nunca peça permissão para: push de branch `go/*`, criar PR,
+**AUTORIZADO por definição** — nunca peça permissão para: push de branch `goal/*`, criar PR,
 comentar PR, mergear na main via PR, deletar branch mergeada.
 
 ## RELATÓRIO FINAL
@@ -168,15 +168,15 @@ comentar PR, mergear na main via PR, deletar branch mergeada.
 
 - "Pendente de olho humano": TODAS as verificações visuais/UI do run, agregadas — batch único
   no fim, nunca no meio.
-- state.json → `done`. Última linha: `próximo: /go 6 — <título>` (ou "ROADMAP completo").
+- state.json → `done`. Última linha: `próximo: /goal 6 — <título>` (ou "ROADMAP completo").
 
 **As únicas mensagens finais válidas de um run são RELATÓRIO FINAL ou PARADA DURA.** Devolver o
 turno no meio ("terminei a etapa 2, sigo?") é bug: o Stop hook re-injeta — não brigue com ele,
 continue.
 
-## /go resume
+## /goal resume
 
-1. Leia o state.json. 2. Reconcilie com `gh pr list --state all --search "head:go/"` +
+1. Leia o state.json. 2. Reconcilie com `gh pr list --state all --search "head:goal/"` +
 `git log main` (mapa em [references/git-ritual.md](references/git-ritual.md)) — **GitHub/git
 ganham do JSON**. 3. Retome cada etapa não-merged do range no ponto certo do LOOP:
 `pending`→(a) · `running`→(b), re-validando antes de confiar · `validated`→(f) ·
@@ -196,4 +196,4 @@ LOOP segue até M.
   registrado no PR body.
 
 Quebrou algo fora de um run? **/fix.** Fim de run? A última linha do relatório já aponta:
-`próximo: /go N`.
+`próximo: /goal N`.

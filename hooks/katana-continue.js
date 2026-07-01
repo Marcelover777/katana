@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Katana — Stop hook (o cinto de segurança do /go).
+// Katana — Stop hook (o cinto de segurança do /goal).
 //
 // O SKILL.md manda o modelo não devolver o turno no meio de um run. Este hook
 // é o enforcement: se `.katana/state.json` tem status=="running" e ainda há
@@ -18,7 +18,7 @@
 //     attempts subiu) → continua bloqueando, não importa quantos nudges já
 //     houve. O `stop_hook_active` do payload NÃO entra na decisão: ele é
 //     true em TODA re-injeção da cadeia e derrubaria run longo saudável;
-//   - o runner /go também ZERA nudges a cada transição de status no state —
+//   - o runner /goal também ZERA nudges a cada transição de status no state —
 //     as duas pontas concordam: só a MESMA foto 3x seguidas é stall.
 //
 // Salvaguardas:
@@ -27,7 +27,7 @@
 //   - só bloqueia se conseguiu PERSISTIR o nudge — sem persistência o
 //     contador nunca subiria e o bloqueio viraria loop infinito;
 //   - recusa symlink; read-modify-write preserva campos que não conhece;
-//   - /go stop marca status=stopped → este hook libera na hora (!= running).
+//   - /goal stop marca status=stopped → este hook libera na hora (!= running).
 //
 // Contrato Claude Code (stdin → stdout):
 //   stdin  : JSON { cwd, stop_hook_active, ... } — só o cwd é consumido
@@ -136,7 +136,7 @@ function main() {
     state.status = 'hard_stop';
     state.stop_reason =
       `stalled: ${nudges} nudges do Stop hook sem progresso na etapa ${pend.k} ` +
-      `(${pend.status}, tentativa ${pend.attempts}). Retome com /go resume.`;
+      `(${pend.status}, tentativa ${pend.attempts}). Retome com /goal resume.`;
     state.updated_at = new Date().toISOString();
     try { writeState(statePath, state); } catch (_) {}
     process.exit(0); // deixa parar
@@ -154,7 +154,7 @@ function main() {
   }
 
   const reason =
-    `Run /go ativo: etapa ${pend.k} (${pend.status}). ` +
+    `Run /goal ativo: etapa ${pend.k} (${pend.status}). ` +
     `Continue de onde parou; releia .katana/state.json e o ROADMAP.md.`;
   try {
     process.stdout.write(JSON.stringify({ decision: 'block', reason }) + '\n');

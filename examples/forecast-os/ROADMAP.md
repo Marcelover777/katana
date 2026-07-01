@@ -86,12 +86,12 @@ Demo (60s): abre o painel, mostra o card de previsão com banda para boi e milho
 Objetivo observável: painel e API respondem numa URL pública (Fly.io), com o DuckDB em volume persistente.
 Gate: FLY_API_TOKEN.
 Depende de: 05.
-Deploy pago — exige confirmação humana: o /go para aqui por definição e te entrega o comando (`fly deploy --remote-only`); você roda, e o `/go resume` valida o smoke.
+Deploy pago — exige confirmação humana: o /goal para aqui por definição e te entrega o comando (`fly deploy --remote-only`); você roda, e o `/goal resume` valida o smoke.
 Tasks:
 - [ ] Dockerfile (imagem slim, `uv sync --frozen`) + fly.toml com volume para `data/`
 - [ ] Health check do Fly apontando para `/health`
 - [ ] Smoke pós-deploy documentado no README
 Aceite:
 - [ ] `fly config validate` exit 0 (fly.toml válido — a fatia mecanizável)
-- [ ] `curl -s https://forecast-os.fly.dev/health | grep -q '"ok"'` (smoke — roda no `/go resume`, depois do deploy humano)
+- [ ] `curl -s https://forecast-os.fly.dev/health | grep -q '"ok"'` (smoke — roda no `/goal resume`, depois do deploy humano)
 Demo (60s): abre a URL pública no celular, painel carrega com as séries e o card de previsão.

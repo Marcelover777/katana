@@ -5,12 +5,12 @@
   "range": [1, 4],
   "current": 3,
   "status": "hard_stop",
-  "stop_reason": "gate: WEATHER_API_KEY inválida no passo 03 (401 em api.openweathermap.org — o valor no .env é o placeholder do .env.example). Pega a chave em https://home.openweathermap.org/api_keys, põe no .env e roda /go resume.",
+  "stop_reason": "gate: WEATHER_API_KEY inválida no passo 03 (401 em api.openweathermap.org — o valor no .env é o placeholder do .env.example). Pega a chave em https://home.openweathermap.org/api_keys, põe no .env e roda /goal resume.",
   "nudges": 0,
   "steps": {
     "1": {
       "status": "merged",
-      "branch": "go/01-scaffold-painel",
+      "branch": "goal/01-scaffold-painel",
       "pr": 1,
       "sha": "3f8a21c",
       "attempts": 1,
@@ -21,7 +21,7 @@
     },
     "2": {
       "status": "merged",
-      "branch": "go/02-ingestao-csv",
+      "branch": "goal/02-ingestao-csv",
       "pr": 2,
       "sha": "b07c94e",
       "attempts": 2,
@@ -32,11 +32,11 @@
     },
     "3": {
       "status": "failed",
-      "branch": "go/03-conector-clima",
+      "branch": "goal/03-conector-clima",
       "pr": null,
       "sha": null,
       "attempts": 1,
-      "last_error": "GET api.openweathermap.org/data/2.5/... → 401 Unauthorized. WEATHER_API_KEY presente no .env mas com o valor placeholder do .env.example. Gate, não bug: sem chave real não existe fix. Código do conector pronto e commitado na branch; /go resume re-roda o Aceite.",
+      "last_error": "GET api.openweathermap.org/data/2.5/... → 401 Unauthorized. WEATHER_API_KEY presente no .env mas com o valor placeholder do .env.example. Gate, não bug: sem chave real não existe fix. Código do conector pronto e commitado na branch; /goal resume re-roda o Aceite.",
       "decisions": []
     },
     "4": {

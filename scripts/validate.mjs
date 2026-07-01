@@ -32,7 +32,7 @@ const lineOf = (txt, needle) => {
 
 // --- 1. Exatamente 3 skills: plan, go, fix ----------------------------------
 // A contagem é o contrato. Não existe "só mais um comando".
-const EXPECTED_SKILLS = ["fix", "go", "plan"];
+const EXPECTED_SKILLS = ["fix", "goal", "plan"];
 let skills = [];
 if (!has("skills")) {
   fail("skills", 0, "diretório ausente");
@@ -45,7 +45,7 @@ if (!has("skills")) {
       "skills",
       0,
       `esperado exatamente {plan, go, fix}; encontrado {${skills.join(", ") || "nada"}}. ` +
-        `3 comandos é regra dura — mecanismo novo entra DENTRO de /plan, /go ou /fix, não como comando.`,
+        `3 comandos é regra dura — mecanismo novo entra DENTRO de /plan, /goal ou /fix, não como comando.`,
     );
 }
 
@@ -112,7 +112,7 @@ for (const skill of skills) {
 }
 
 // --- 5. Os 3 comandos aparecem nas superfícies públicas ---------------------
-const COMMANDS = ["/plan", "/go", "/fix"];
+const COMMANDS = ["/plan", "/goal", "/fix"];
 for (const surface of ["README.md", "README.en.md", ".claude-plugin/plugin.json"]) {
   if (!has(surface)) {
     fail(surface, 0, "ausente");
@@ -165,7 +165,7 @@ if (!has("hooks")) {
 }
 
 // --- 7. state.json de exemplo: JSON válido com o schema mínimo ---------------
-// É o contrato que os hooks e o /go resume leem cru (JSON.parse sem perdão).
+// É o contrato que os hooks e o /goal resume leem cru (JSON.parse sem perdão).
 const STATE = "examples/forecast-os/.katana/state.json";
 if (!has(STATE)) {
   fail(STATE, 0, "ausente — o exemplo É a documentação viva");

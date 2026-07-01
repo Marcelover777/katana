@@ -1,6 +1,6 @@
-# git-ritual — os comandos exatos do /go
+# git-ritual — os comandos exatos do /goal
 
-Bash (Git Bash no Windows). Caveats de PowerShell 5.1 no fim — valem para o `go.ps1` e para
+Bash (Git Bash no Windows). Caveats de PowerShell 5.1 no fim — valem para o `goal.ps1` e para
 qualquer coisa que rode em PS. Os exemplos dizem `main`; se a default do repo é outra, detecte
 1x no preflight: `git symbolic-ref --short refs/remotes/origin/HEAD`.
 
@@ -19,7 +19,7 @@ npm run typecheck && npm run test # package.json
 ## Por etapa KK (exemplo: etapa 03)
 
 ```bash
-git checkout -b go/03-tabular-champion main
+git checkout -b goal/03-tabular-champion main
 
 # ... tasks: 1 commit atômico por task ...
 git add apps/ pipelines/ tests/          # paths tocados; NUNCA git add -f, NUNCA git add . cego
@@ -39,8 +39,8 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 Push + PR:
 
 ```bash
-git push -u origin go/03-tabular-champion
-gh pr create --base main --head go/03-tabular-champion \
+git push -u origin goal/03-tabular-champion
+gh pr create --base main --head goal/03-tabular-champion \
   --title "Etapa 03 — trilho de campeão tabular" \
   --body-file .katana/tmp/pr-body-03.md   # o que fez, Aceite rodado com output, decisões
 gh pr view --json number -q .number       # captura o nº do PR
@@ -65,7 +65,7 @@ Bloco do LOG.md (append-only — nunca reescreva o histórico):
 - Arquivos: <lista curta>
 - Verificação: <Aceite que fechou verde>
 - Decisões: <opcional — decisões autônomas e achados de self-review, como no PR>
-- Próximo: /go 4 — <título>
+- Próximo: /goal 4 — <título>
 ```
 
 ## Self-review (advisory — o Aceite mecânico é que destrava o merge)
@@ -89,10 +89,10 @@ git pull --ff-only origin main           # a etapa seguinte parte do main já co
 ## Sem remote (o preflight perguntou; você escolheu local)
 
 ```bash
-# self-review antes do merge: o diff é git diff main...go/03-tabular-champion
+# self-review antes do merge: o diff é git diff main...goal/03-tabular-champion
 git checkout main
-git merge --no-ff go/03-tabular-champion -m "Etapa 03 — trilho de campeão tabular"
-git branch -d go/03-tabular-champion
+git merge --no-ff goal/03-tabular-champion -m "Etapa 03 — trilho de campeão tabular"
+git branch -d goal/03-tabular-champion
 ```
 
 Sem remote não há PR: achados de review vão pro LOG.md. Quer PR? `gh repo create` — a pergunta
@@ -101,9 +101,9 @@ do preflight existe pra isso.
 ## Resume — reconciliação (GitHub/git ganham do state.json)
 
 ```bash
-gh pr list --state all --search "head:go/" --json number,headRefName,state,mergedAt
+gh pr list --state all --search "head:goal/" --json number,headRefName,state,mergedAt
 git log --oneline main -20
-git branch --list "go/*"
+git branch --list "goal/*"
 ```
 
 | Realidade encontrada | state.json corrige para | Retoma em |
@@ -120,21 +120,21 @@ UM worktree dedicado, reutilizado o run inteiro — pro checkout principal ficar
 o run roda. Paralelismo real (2+ runs simultâneos) está fora do v1: um worktree, um run.
 
 ```bash
-git worktree add ../<repo>-go -b go/03-<slug> origin/main   # nasce já na 1ª branch da faixa
-cp .env .env.local ../<repo>-go/ 2>/dev/null                # .env é gitignored — sem copiar, gate falso de chave
-cp -r .katana ../<repo>-go/ 2>/dev/null                     # state.json/tmp são gitignored — sem copiar, hooks e resume cegos
+git worktree add ../<repo>-go -b goal/03-<slug> origin/main   # nasce já na 1ª branch da faixa
+cp .env .env.local ../<repo>-goal/ 2>/dev/null                # .env é gitignored — sem copiar, gate falso de chave
+cp -r .katana ../<repo>-goal/ 2>/dev/null                     # state.json/tmp são gitignored — sem copiar, hooks e resume cegos
 cd ../<repo>-go                                             # o run INTEIRO acontece aqui
 ```
 
 O state.json do run vive no worktree. Ao voltar (fim do run), NÃO copie o `.katana/` de volta —
-GitHub/git são a fonte que o `/go resume` reconcilia.
+GitHub/git são a fonte que o `/goal resume` reconcilia.
 
 Etapas seguintes, no MESMO worktree — `main` está checked-out no worktree principal, então git
 recusa `checkout main` aqui. Crie de `origin/main`, nunca de `main` local:
 
 ```bash
 git fetch origin
-git checkout -b go/04-<slug> origin/main   # origin/main já tem a etapa 03 (mergeada via PR)
+git checkout -b goal/04-<slug> origin/main   # origin/main já tem a etapa 03 (mergeada via PR)
 ```
 
 Fim do run:
@@ -147,12 +147,12 @@ git pull --ff-only origin main             # atualiza o checkout principal
 
 ## Permissões — o "sem parar" depende disto
 
-`/go setup` escreve em `.claude/settings.json` → `permissions.allow` (sintaxe de prefixo:
+`/goal setup` escreve em `.claude/settings.json` → `permissions.allow` (sintaxe de prefixo:
 espaço antes do `*`):
 
 ```
 Bash(git status *)   Bash(git fetch *)      Bash(git checkout *) Bash(git pull *)
-Bash(git add *)      Bash(git commit *)     Bash(git push -u origin go/*)
+Bash(git add *)      Bash(git commit *)     Bash(git push -u origin goal/*)
 Bash(git diff *)     Bash(git log *)        Bash(git branch *)   Bash(git merge *)
 Bash(git symbolic-ref *)                    Bash(git worktree *)
 Bash(gh pr create *) Bash(gh pr view *)     Bash(gh pr diff *)   Bash(gh pr comment *)

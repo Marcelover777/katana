@@ -1,11 +1,11 @@
 ---
 name: plan
-description: Desenha o mapa — ideia falada ou repo herdado vira ROADMAP.md executável pelo /go (+ .env.example, CLAUDE.md). Uma pergunta por vez, com recomendação; brownfield audita. Use em "/plan", "monta o mapa", "quero criar/fazer um app", ideia solta de projeto/feature, repo sem roadmap.
+description: Desenha o mapa — ideia falada ou repo herdado vira ROADMAP.md executável pelo /goal (+ .env.example, CLAUDE.md). Uma pergunta por vez, com recomendação; brownfield audita. Use em "/plan", "monta o mapa", "quero criar/fazer um app", ideia solta de projeto, repo sem roadmap.
 ---
 
 # /plan — desenha o mapa
 
-Entrada: a ideia do jeito que sair (voz, fluxo de consciência, meio termo técnico) ou um repo que já existe. Saída: `ROADMAP.md` que o /go executa de ponta a ponta. O /plan pergunta pouco, recomenda sempre, escreve e entrega o verbo. Não escreve código.
+Entrada: a ideia do jeito que sair (voz, fluxo de consciência, meio termo técnico) ou um repo que já existe. Saída: `ROADMAP.md` que o /goal executa de ponta a ponta. O /plan pergunta pouco, recomenda sempre, escreve e entrega o verbo. Não escreve código.
 
 ## Superfícies (tudo que o /plan toca)
 
@@ -86,11 +86,11 @@ Nesta ordem:
    - **Numeração estável.** Nunca renumere: passo novo SEMPRE entra no fim, com o próximo número; a ordem real de execução é o `Depende de:`.
    - **Primeiro passo sem gate.** Algo visível no ar antes de qualquer chave.
    - **Gate com nome exato de env var** (catálogo ou doc oficial). Nunca invente nome.
-   - **Aceite mecânico por passo** — comando/grep/test que o /go roda. "Funciona corretamente" não é Aceite.
+   - **Aceite mecânico por passo** — comando/grep/test que o /goal roda. "Funciona corretamente" não é Aceite.
    - **Demo (60s).** Se não dá pra escrever a demo, o passo não tem pronto observável — volte ao objetivo.
    - **Fila única.** Follow-up, bug achado depois, ideia nova: vira PASSO aqui. Não existe backlog paralelo.
 2. **`.env.example`** — por var: comentário com o que é + onde pegar (URL) + obrigatória/opcional + placeholder falso. Zero valor real: o arquivo é versionado.
-3. **`CLAUDE.md`** — atualiza, não sobrescreve o que já existe: § Visão (1 linha), § Stack (tabela escolha + porquê + alternativa descartada + link pricing), § Comandos de check (o que o /go roda pra validar cada passo), § Invariantes/glossário só se o domínio tiver termos que não podem ser confundidos.
+3. **`CLAUDE.md`** — atualiza, não sobrescreve o que já existe: § Visão (1 linha), § Stack (tabela escolha + porquê + alternativa descartada + link pricing), § Comandos de check (o que o /goal roda pra validar cada passo), § Invariantes/glossário só se o domínio tiver termos que não podem ser confundidos.
 
 ### 6. Triagem L → `.katana/plans/NN-<slug>.md`
 
@@ -111,14 +111,14 @@ SÓ para passo genuinamente multi-sessão. O passo continua no ROADMAP (ganha a 
 
 Mostre o mapa em 1 mensagem (número + título + 1 linha + gate) e pergunte UMA vez: "falta passo pra ficar genuinamente funcional? Algum é especulativo e sai?" Itere se preciso, e feche:
 
-> ROADMAP.md pronto com N passos. Agora: **/go 1..N** — ou **/go 1** pra ver um passo primeiro. Gate faltando? O /go para e te diz a var exata e onde pegar.
+> ROADMAP.md pronto com N passos. Agora: **/goal 1..N** — ou **/goal 1** pra ver um passo primeiro. Gate faltando? O /goal para e te diz a var exata e onde pegar.
 
 ## Anti-padrões
 
 - ❌ Passo horizontal ("todos os models", depois "todas as APIs") — mata o demoável e esconde bug de integração.
 - ❌ Passo que entrega meia-feature (mock, dado chumbado, "arrumo depois") — o que entra no mapa sai inteiro.
-- ❌ Aceite que exige julgamento ("está bom", "funciona") — o /go não destrava com vibe.
-- ❌ Inventar nome de env var — catálogo ou doc oficial, senão o gate do /go quebra à toa.
+- ❌ Aceite que exige julgamento ("está bom", "funciona") — o /goal não destrava com vibe.
+- ❌ Inventar nome de env var — catálogo ou doc oficial, senão o gate do /goal quebra à toa.
 - ❌ Cravar preço/limite de free-tier — envelhece e vira mentira; linke a pricing.
 - ❌ Dez perguntas de uma vez, ou pergunta que o código responde.
 - ❌ Listar opções sem recomendar — você é o engenheiro, não um menu.
@@ -127,4 +127,4 @@ Mostre o mapa em 1 mensagem (número + título + 1 linha + gate) e pergunte UMA 
 
 ## Próxima ação
 
-Mapa fechado → **/go 1..N**. Quebrou algo no caminho? **/fix**.
+Mapa fechado → **/goal 1..N**. Quebrou algo no caminho? **/fix**.

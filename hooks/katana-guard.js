@@ -4,7 +4,7 @@
 // As gerações anteriores PEDIAM no prompt para o modelo não rodar comando
 // destrutivo — reza, não mecanismo. Aqui o bloqueio é real:
 // permissionDecision:"deny" volta como erro para o modelo, e o SKILL.md do
-// /go trata deny do guard como PARADA DURA. Nunca contorno.
+// /goal trata deny do guard como PARADA DURA. Nunca contorno.
 //
 // Duas camadas:
 //   SEMPRE (hook instalado = regra valendo, com ou sem run):
@@ -19,7 +19,7 @@
 //     7. rm -rf apontando para fora do repo (heurística: alvo absoluto que
 //        não começa com o cwd, ou ~, ou /, ou sobe com ..)
 //     8. reescrita de histórico: git filter-branch; git push com +refspec
-//     9. git commit com HEAD em main/master (o run trabalha em go/*)
+//     9. git commit com HEAD em main/master (o run trabalha em goal/*)
 //
 // Salvaguardas:
 //   - só olha tool_name=="Bash"; qualquer outra tool passa direto;
@@ -224,7 +224,7 @@ function checkSegment(seg, ctx) {
     return { always: false, motivo: 'push com +refspec é force-push disfarçado' };
   }
   if (git && /\bcommit\b/.test(evalSeg) && (ctx.branch === 'main' || ctx.branch === 'master')) {
-    return { always: false, motivo: `commit direto em ${ctx.branch} (o run trabalha em go/*)` };
+    return { always: false, motivo: `commit direto em ${ctx.branch} (o run trabalha em goal/*)` };
   }
   if (rmOutsideRepo(seg, ctx.projectDir) || rmOutsideRepo(evalSeg, ctx.projectDir)) {
     return { always: false, motivo: 'rm -rf apontando para fora do repo' };
@@ -277,7 +277,7 @@ function main() {
       running = runActive(projectDir);
       runChecked = true;
     }
-    if (running) deny(`${hit.motivo} — durante run /go ativo`);
+    if (running) deny(`${hit.motivo} — durante run /goal ativo`);
   }
 
   process.exit(0); // nada destrutivo → fluxo normal de permissão decide
