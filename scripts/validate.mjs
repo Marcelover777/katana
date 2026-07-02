@@ -30,7 +30,7 @@ const lineOf = (txt, needle) => {
   return i === -1 ? 0 : i + 1;
 };
 
-// --- 1. Exatamente 3 skills: plan, go, fix ----------------------------------
+// --- 1. Exatamente 3 skills: plan, goal, fix ---------------------------------
 // A contagem é o contrato. Não existe "só mais um comando".
 const EXPECTED_SKILLS = ["fix", "goal", "plan"];
 let skills = [];
@@ -44,7 +44,7 @@ if (!has("skills")) {
     fail(
       "skills",
       0,
-      `esperado exatamente {plan, go, fix}; encontrado {${skills.join(", ") || "nada"}}. ` +
+      `esperado exatamente {plan, goal, fix}; encontrado {${skills.join(", ") || "nada"}}. ` +
         `3 comandos é regra dura — mecanismo novo entra DENTRO de /plan, /goal ou /fix, não como comando.`,
     );
 }
