@@ -1,16 +1,32 @@
 <p align="center">
   <a href="https://github.com/Marcelover777/katana">
-    <img src="assets/banner.gif" alt="Katana — /plan draws the map · /goal drives to the end · /fix when it breaks" width="100%">
+    <img src="assets/banner.png" alt="Katana — you set the goal, it cuts to the end" width="100%">
   </a>
 </p>
 
 # KATANA
 
-**Plan > Vibes. Three commands: /plan draws the map, /goal drives to the end, /fix when it breaks.**
+**An autonomous development system for Claude Code (PT-BR).** You speak the goal; Katana plans it into verifiable steps, executes with real git/GitHub — branch, PR, self-review, merge — under a mechanical leash of hooks, with state you can resume anytime and an overnight mode. The three commands (`/plan`, `/goal`, `/fix`) are just the steering wheel.
 
-> /plan draws the map. /goal drives to the end — it only stops for a missing key or a dangerous move. /fix when it breaks.
+> Plan > Vibes. You set the goal. It cuts to the end — stopping only for a missing key or a dangerous move.
 
-That sentence is the whole manual. The rest of this README is detail.
+## What Katana is, as a whole
+
+- **Executable planning** — a spoken idea becomes a `ROADMAP.md` of demoable vertical slices, each step with its declared gate and a command-verifiable *Acceptance*. On an existing codebase it audits first (`file:line` anchors, "Acceptance = the verifiable inverse of the finding").
+- **An autonomous engine on real git** — 1 step = 1 branch = 1 adversarially self-reviewed PR = 1 merge. Implementation ambiguity never stops a run: decide, record it in the PR, keep going.
+- **A mechanical leash, not a prayer** — a PreToolUse hook denies destructive commands outright (`deny`, not an instruction); a Stop hook re-injects continuation if the model tries to let go of the wheel; a SessionStart hook restores context in a single line.
+- **State that survives everything** — `.katana/state.json` + the PRs are the memory; a dead session, blown context or closed laptop all resolve with `/goal resume` (GitHub/git win over the JSON).
+- **Overnight** — a fail-closed headless runner drives step by step through the night and stops itself at the first bad signal.
+- **Anti-bloat as code** — the lineage bloated from 5→20 commands; Katana returns to 3 and `validate.mjs` **fails CI** if a 4th appears. Three surfaces in your project, nothing else.
+- **A living example** — [`examples/forecast-os/`](examples/forecast-os/) ships a real roadmap, mid-run state and the full transcript of a `/goal 1..4`.
+
+## Katana running
+
+<p align="center">
+  <img src="assets/demo.gif" alt="A /goal 1..3 run: preflight, critical self-review find, autonomous /fix, honest hard stop" width="88%">
+</p>
+
+A real run: a preflight that checks everything BEFORE takeoff, self-review catching a critical leak in step 01, autonomous `/fix` killing a `ValueError` in 02, and the honest hard stop in 03 — a placeholder key doesn't burn "3 attempts", it becomes a gate with the exact resume instruction.
 
 ## The lineage
 
@@ -95,21 +111,9 @@ What Forger forbade, Katana declares the loop's happy ending: pushing the `goal/
 
 Session died, context overflowed, you closed the laptop? `/goal resume` re-reads `.katana/state.json` and reconciles against `gh pr list` + `git log` — **GitHub/git win over the JSON**. It resumes exactly at the pending step. `/goal stop` is the kill switch. `/goal 3..5 --dry` shows the flight plan without executing.
 
-### Example session (condensed)
+### Example session
 
-```
-> /goal 1..3
-Preflight: clean tree ✅ · main up to date ✅ · green baseline ✅
-Range gates: DATABASE_URL ✅, API_TOKEN ✅ — taking off.
-[goal 1/3] step 01 merged — PR #1 (1 attempt, 8 min)
-[goal 2/3] step 02 merged — PR #2 (2 attempts: 1 auto-fix of a test, 11 min)
-[goal 3/3] step 03 merged — PR #3 (self-review caught an off-by-one, fixed, 15 min)
-
-REPORT — 3/3 merged · pending human eyes: check the home page chart
-next: /goal 4
-```
-
-The full, realistic transcript of a run — preflight, a critical finding caught by self-review on step 01, one auto-fix on 02, and an honest gate stop on 03 — lives in [`examples/forecast-os/RUN-TRANSCRIPT.md`](examples/forecast-os/RUN-TRANSCRIPT.md).
+The GIF at the top is a condensed run. The full, realistic transcript — preflight, a critical finding caught by self-review on step 01, one auto-fix on 02, and an honest gate stop on 03 — lives in [`examples/forecast-os/RUN-TRANSCRIPT.md`](examples/forecast-os/RUN-TRANSCRIPT.md).
 
 ## Why 3 commands
 

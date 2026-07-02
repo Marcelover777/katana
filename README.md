@@ -1,16 +1,32 @@
 <p align="center">
   <a href="https://github.com/Marcelover777/katana">
-    <img src="assets/banner.gif" alt="Katana — /plan desenha o mapa · /goal dirige até o fim · /fix quando quebra" width="100%">
+    <img src="assets/banner.png" alt="Katana — você dá a meta, ela corta até o fim" width="100%">
   </a>
 </p>
 
 # KATANA
 
-**Plan > Vibes. Três comandos: /plan desenha o mapa, /goal dirige até o fim, /fix quando quebra.**
+**Um sistema de desenvolvimento autônomo para Claude Code (PT-BR).** Você fala a meta; a Katana planeja em passos verificáveis, executa com git/GitHub de verdade — branch, PR, self-review, merge — sob uma coleira mecânica de hooks, com estado retomável a qualquer hora e um modo overnight. Os três comandos (`/plan`, `/goal`, `/fix`) são só o volante.
 
-> /plan desenha o mapa. /goal dirige até o fim — só para se faltar chave ou for perigoso. /fix quando quebra.
+> Plan > Vibes. Você dá a meta. Ela corta até o fim — e só para se faltar chave ou for perigoso.
 
-Essa frase é o manual inteiro. O resto deste README é detalhe.
+## O que a Katana é, por inteiro
+
+- **Planejamento executável** — ideia falada vira `ROADMAP.md` de fatias verticais demoáveis, cada passo com gate declarado e *Aceite* verificável por comando. Em codebase existente, audita antes (âncora `arquivo:linha`, "Aceite = inverso verificável do achado").
+- **Motor autônomo com git real** — 1 passo = 1 branch = 1 PR com self-review adversarial = 1 merge. Ambiguidade de implementação nunca para o run: decide, registra no PR, segue.
+- **Coleira mecânica, não reza** — hook PreToolUse nega destrutivos por `deny` (força bruta, não instrução); hook Stop re-injeta a continuação se o modelo tentar largar o volante; hook SessionStart devolve o contexto em 1 linha.
+- **Estado que sobrevive a tudo** — `.katana/state.json` + PRs são a memória; sessão morta, contexto estourado ou notebook fechado se resolvem com `/goal resume` (GitHub/git ganham do JSON).
+- **Overnight** — runner headless fail-closed roda etapa por etapa de madrugada e para sozinho no primeiro sinal ruim.
+- **Anti-inchaço como código** — a linhagem inchou de 5→20 comandos; a Katana volta a 3 e o `validate.mjs` **falha o CI** se aparecer um 4º. Três superfícies no seu projeto, e mais nada.
+- **Exemplo vivo** — [`examples/forecast-os/`](examples/forecast-os/) tem roadmap real, estado no meio de um run e a transcrição completa de um `/goal 1..4`.
+
+## A Katana rodando
+
+<p align="center">
+  <img src="assets/demo.gif" alt="Run /goal 1..3: preflight, self-review crítico, /fix autônomo e parada dura honesta" width="88%">
+</p>
+
+Um run de verdade: preflight que confere tudo ANTES de decolar, self-review pegando vazamento crítico na etapa 01, `/fix` autônomo matando um `ValueError` na 02, e a parada dura honesta na 03 — chave placeholder não vira "3 tentativas queimadas", vira gate com instrução exata de retomada.
 
 ## A linhagem
 
@@ -95,21 +111,9 @@ O que o Forger proibia, a Katana declara fim feliz do loop: push da branch `goal
 
 Sessão morreu, contexto estourou, você fechou o notebook? `/goal resume` relê `.katana/state.json` e reconcilia com `gh pr list` + `git log` — **GitHub/git ganham do JSON**. Retoma exatamente do passo pendente. `/goal stop` é o kill switch. `/goal 3..5 --dry` mostra o plano de voo sem executar.
 
-### Sessão de exemplo (condensada)
+### Sessão de exemplo
 
-```
-> /goal 1..3
-Preflight: árvore limpa ✅ · main atualizado ✅ · baseline verde ✅
-Gates da faixa: DATABASE_URL ✅, API_TOKEN ✅ — decolando.
-[goal 1/3] etapa 01 mergeada — PR #1 (1 tentativa, 8 min)
-[goal 2/3] etapa 02 mergeada — PR #2 (2 tentativas: 1 auto-fix de teste, 11 min)
-[goal 3/3] etapa 03 mergeada — PR #3 (self-review pegou off-by-one, corrigido, 15 min)
-
-RELATÓRIO — 3/3 mergeados · pendente de olho humano: conferir o gráfico da home
-próximo: /goal 4
-```
-
-A transcrição completa e realista de um run — preflight, um crítico pego pelo self-review na etapa 01, um auto-fix na 02 e uma parada de gate honesta na 03 — está em [`examples/forecast-os/RUN-TRANSCRIPT.md`](examples/forecast-os/RUN-TRANSCRIPT.md).
+O GIF do topo é um run condensado. A transcrição completa e realista — preflight, um crítico pego pelo self-review na etapa 01, um auto-fix na 02 e uma parada de gate honesta na 03 — está em [`examples/forecast-os/RUN-TRANSCRIPT.md`](examples/forecast-os/RUN-TRANSCRIPT.md).
 
 ## Por que 3 comandos
 
