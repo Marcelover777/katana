@@ -22,7 +22,7 @@ param(
 $ErrorActionPreference = 'Stop'
 
 $RepoUrl = 'https://github.com/Marcelover777/katana.git'
-$Skills  = @('plan', 'go', 'fix')
+$Skills  = @('plan', 'goal', 'fix')
 
 if ($Global) {
     $ClaudeDir = Join-Path $HOME '.claude'

@@ -15,7 +15,7 @@
 set -euo pipefail
 
 REPO_URL="https://github.com/Marcelover777/katana.git"
-SKILLS=(plan go fix)
+SKILLS=(plan goal fix)
 
 GLOBAL=0
 TARGET_DIR="$(pwd)"
