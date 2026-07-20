@@ -1,130 +1,93 @@
 ---
 name: plan
-description: Desenha o mapa — ideia falada ou repo herdado vira ROADMAP.md executável pelo /goal (+ .env.example, CLAUDE.md). Uma pergunta por vez, com recomendação; brownfield audita. Use em "/plan", "monta o mapa", "quero criar/fazer um app", ideia solta de projeto, repo sem roadmap.
+description: Transforma um objetivo em ROADMAP.md curto e executável após explorar o repositório e resolver apenas as ambiguidades que mudam a solução. Use por comando explícito antes de implementar trabalho novo ou reorganizar um roadmap existente.
+argument-hint: "[objetivo, problema ou mudança]"
+disable-model-invocation: true
 ---
 
-# /plan — desenha o mapa
+# /plan — desenhar o caminho
 
-Entrada: a ideia do jeito que sair (voz, fluxo de consciência, meio termo técnico) ou um repo que já existe. Saída: `ROADMAP.md` que o /goal executa de ponta a ponta. O /plan pergunta pouco, recomenda sempre, escreve e entrega o verbo. Não escreve código.
+Objetivo recebido: `$ARGUMENTS`
 
-## Superfícies (tudo que o /plan toca)
+Crie ou atualize `ROADMAP.md`. Esta skill planeja; não altera código de produto,
+não instala dependências e não executa o plano.
 
-| Arquivo | O quê |
-|---|---|
-| `ROADMAP.md` (raiz) | o mapa — formato em [ROADMAP-TEMPLATE.md](ROADMAP-TEMPLATE.md) |
-| `.env.example` | anotado por var: o que é, onde pegar, obrigatória/opcional. Nomes SÓ do catálogo [references/env-vars.md](references/env-vars.md) ou da doc oficial |
-| `CLAUDE.md` do projeto | § Visão · § Stack (escolha + porquê) · § Comandos de check · § Invariantes/glossário (se houver) |
-| `.katana/plans/NN-<slug>.md` | SÓ quando um passo é triado L (multi-sessão) |
+## 1. Entenda antes de perguntar
 
-Nada além disso. BRIEF, PLAN, STACK, SETUP, SUMMARY não existem aqui.
+Leia as instruções do repositório, o roadmap existente, os manifestos, a
+estrutura e os arquivos diretamente relacionados ao objetivo. Use git apenas
+para contexto de leitura.
 
-## Processo
+Resolva no código tudo que o código puder responder. Pergunte ao usuário só
+quando a resposta mudar materialmente escopo, comportamento público, dados,
+segurança, custo ou arquitetura. Faça uma pergunta por vez e inclua uma
+recomendação curta.
 
-### 1. Espelho (antes de qualquer pergunta)
+Antes de escrever, resuma em até três pontos:
 
-O usuário fala solto. Antes de perguntar qualquer coisa, espelhe o que entendeu em no máximo 3 bullets:
+- resultado que deve existir;
+- limite mais importante do escopo;
+- decisão ainda assumida, se houver.
 
-```
-Entendi:
-- <o que vai existir, em 1 frase concreta>
-- <pra quem / em que momento isso é usado>
-- <a parte mais difusa, que vou estressar primeiro>
-Correto? Algo essencial faltou?
-```
+Se o pedido já for claro, não transforme confirmação em cerimônia.
 
-Pega 80% dos desentendimentos no turn 1, antes de gastar 10 turns de grilling na direção errada.
+## 2. Escolha a profundidade
 
-### 2. Detecção de terreno
+- **Pequeno:** uma mudança coesa, poucos arquivos, sem decisão relevante → um
+  passo.
+- **Médio:** uma entrega de uma sessão → dois a quatro passos.
+- **Grande:** várias entregas observáveis → quantos passos forem necessários,
+  normalmente até dez; divida novamente se um passo não couber numa sessão.
 
-| Terreno | Sinal | Caminho |
-|---|---|---|
-| **Greenfield** | sem código | grilling + fundação (§4) → ROADMAP novo |
-| **Brownfield** | código, sem `ROADMAP.md` | audit embutido: [references/audit.md](references/audit.md) — diagnóstico com âncora arquivo:linha vira passos |
-| **Feature nova** | `ROADMAP.md` já existe | **adiciona passos, não recria.** Passo novo entra no FIM, com o próximo número (ordem real via `Depende de:`); o resto do mapa fica intacto |
+O tamanho muda a quantidade de passos, não cria novos tipos de documento.
+`ROADMAP.md` continua sendo a única fonte de verdade.
 
-### 3. Triagem S/M/L
+## 3. Escreva fatias executáveis
 
-Classifique em 1 linha e diga ao usuário. Cerimônia é imposto.
+Use [ROADMAP-TEMPLATE.md](ROADMAP-TEMPLATE.md). Cada passo precisa conter:
 
-| Tamanho | Heurística | Caminho |
-|---|---|---|
-| **S** | ≤30 min, 1-2 arquivos, zero decisão de design | zero grilling: vira 1 passo direto no ROADMAP, com Aceite, e pronto |
-| **M** | 1 sessão, decisões pequenas | 3-6 perguntas → 1-3 passos |
-| **L** | multi-sessão, decisão de arquitetura, risco de quebra | grilling profundo → passo no ROADMAP + plano detalhado em `.katana/plans/` (§6) |
+- **Resultado:** comportamento observável, não atividade interna;
+- **Depende de:** somente dependências reais;
+- **Bloqueios:** entrada externa já conhecida, ou `Nenhum`;
+- **Fazer:** lista curta de mudanças delimitadas;
+- **Verificar:** ao menos um comando determinístico que termine sozinho.
 
-Se o usuário discordar da triagem, ele vence. Mas proponha sempre — ninguém percebe sozinho quando está sobre-planejando um S ou sub-planejando um L.
+Prefira fatias verticais: uma capacidade pequena atravessando as camadas que
+precisa, em vez de “todos os modelos”, depois “todas as APIs”. O primeiro passo
+deve produzir feedback cedo e, quando possível, não depender de credenciais.
 
-Projeto greenfield inteiro NÃO é L — L classifica um PASSO. App novo = fundação (§4) + ROADMAP de 5-12 passos; só um passo individual genuinamente multi-sessão ganha `.katana/plans/`.
+Critérios como “funciona”, “está bom” e “sem regressão” não são verificações.
+Converta-os em teste, build, typecheck, lint, consulta, grep ou smoke test com
+resultado esperado. Se uma verificação só puder ser humana, declare-a como
+`Revisar manualmente`; não finja que é mecânica.
 
-### 4. Grilling
+Se a exploração revelar uma falha que bloqueia o objetivo, incorpore-a no passo
+relevante: o comando que hoje falha vira parte de `Verificar`. Falha não
+relacionada fica fora do escopo; não crie comando ou backlog de bugs separado.
 
-**Explore o codebase antes de perguntar.** Pergunta que Grep/Read responde não vai pro usuário. Se o usuário disser X e o código fizer Y, surfacie na hora: "você disse que cancela parcial, mas o código cancela a Order inteira — qual vale?"
+## 4. Preserve o que já existe
 
-Formato de TODA pergunta — uma por turno, SEMPRE com recomendação:
+Ao atualizar um roadmap:
 
-```
-Pergunta: <concreta e fechada>
-Recomendação: <opção + 1 frase do porquê>
-Alternativas: <B / C — trade-off curto, se relevante>
-```
+- não renumere passos existentes;
+- não apague decisões ou passos concluídos sem explicar ao usuário;
+- acrescente trabalho novo no fim, salvo quando a dependência exigir outra
+  posição;
+- mantenha `[x]` apenas no que já tem evidência de conclusão;
+- remova duplicação e passos especulativos.
 
-- Estresse com cenário concreto: "se X fizer Y enquanto Z, o que acontece?"
-- Feature com UI: cubra estado vazio, estado de erro, loading e quem NÃO pode ver (1 pergunta cada, só as relevantes).
-- Pare quando objetivo e não-escopo estão claros, ou quando o usuário disser "suficiente". Não invente pergunta pra prolongar.
+Em brownfield, cite caminhos e símbolos concretos nas notas de `Fazer`. Não
+realize uma auditoria genérica do repositório quando o objetivo é localizado.
 
-**Fundação (greenfield first-run — 3-4 perguntas, não comandos separados):**
-1. Arquétipo → stack: recomende pela matriz [references/stack-matrix.md](references/stack-matrix.md) — default + porquê + 1 alternativa + gotchas. Nunca crave preço/limite; linke a pricing oficial.
-2. Tema visual (só se tem UI): público, sensação, claro/escuro — 1 pergunta. O scaffold vira o passo 01.
-3. Chaves/serviços: quais peças exigem env var — alimenta o `.env.example` e os gates dos passos.
+## 5. Feche
 
-### 5. Escreve
+Valide que o Markdown segue o template, que os comandos citados existem ou
+estão claramente marcados para criação e que não há bloqueio oculto.
 
-Nesta ordem:
+Mostre ao usuário somente:
 
-1. **`ROADMAP.md`** — formato em [ROADMAP-TEMPLATE.md](ROADMAP-TEMPLATE.md). Regras duras:
-   - **Passo = fatia demoável, não micro-tarefa.** Vertical (schema → API → UI → teste), ~5-12 passos. Um SaaS de waitlist → login → cobrança são ~6 passos, não 40 tasks.
-   - **Numeração estável.** Nunca renumere: passo novo SEMPRE entra no fim, com o próximo número; a ordem real de execução é o `Depende de:`.
-   - **Primeiro passo sem gate.** Algo visível no ar antes de qualquer chave.
-   - **Gate com nome exato de env var** (catálogo ou doc oficial). Nunca invente nome.
-   - **Aceite mecânico por passo** — comando/grep/test que o /goal roda. "Funciona corretamente" não é Aceite.
-   - **Demo (60s).** Se não dá pra escrever a demo, o passo não tem pronto observável — volte ao objetivo.
-   - **Fila única.** Follow-up, bug achado depois, ideia nova: vira PASSO aqui. Não existe backlog paralelo.
-2. **`.env.example`** — por var: comentário com o que é + onde pegar (URL) + obrigatória/opcional + placeholder falso. Zero valor real: o arquivo é versionado.
-3. **`CLAUDE.md`** — atualiza, não sobrescreve o que já existe: § Visão (1 linha), § Stack (tabela escolha + porquê + alternativa descartada + link pricing), § Comandos de check (o que o /goal roda pra validar cada passo), § Invariantes/glossário só se o domínio tiver termos que não podem ser confundidos.
+1. quantidade e títulos dos passos;
+2. bloqueios conhecidos;
+3. próxima invocação recomendada, por exemplo `/katana:goal 1..3`.
 
-### 6. Triagem L → `.katana/plans/NN-<slug>.md`
-
-SÓ para passo genuinamente multi-sessão. O passo continua no ROADMAP (ganha a linha `Plano: .katana/plans/NN-<slug>.md`); o arquivo detalha:
-
-- **Tasks atômicas**, cada uma com `read_first` (arquivos a ler antes de mexer) e `acceptance` verificável via grep/build/test.
-- **Sem código no plano.** Decisões, áreas afetadas, contratos em prosa. Exceção rara: tipo/schema quando encoda a decisão melhor que prosa.
-- **Vertical slices:** cada task corta as camadas numa fatia fina, não uma camada inteira por vez.
-- **Task com >5 subtasks é 2 tasks.** Não existe campo de esforço.
-- **Must-Haves goal-backward** (task ✅ ≠ objetivo ✅ — placeholder coerente também "completa" task):
-  - *Truths* — comportamentos observáveis.
-  - *Artifacts* — arquivos com substância real (min. de linhas, exports).
-  - *Key Links* — conexões críticas via regex (ex.: `fetch\(['"]/api/x`).
-  - *Demo* — 3-6 passos, ≤60s.
-- **Auto-suficiente para reset:** sessão nova lendo só o plano + CLAUDE.md consegue executar o passo inteiro.
-
-### 7. Fecha e entrega o verbo
-
-Mostre o mapa em 1 mensagem (número + título + 1 linha + gate) e pergunte UMA vez: "falta passo pra ficar genuinamente funcional? Algum é especulativo e sai?" Itere se preciso, e feche:
-
-> ROADMAP.md pronto com N passos. Agora: **/goal 1..N** — ou **/goal 1** pra ver um passo primeiro. Gate faltando? O /goal para e te diz a var exata e onde pegar.
-
-## Anti-padrões
-
-- ❌ Passo horizontal ("todos os models", depois "todas as APIs") — mata o demoável e esconde bug de integração.
-- ❌ Passo que entrega meia-feature (mock, dado chumbado, "arrumo depois") — o que entra no mapa sai inteiro.
-- ❌ Aceite que exige julgamento ("está bom", "funciona") — o /goal não destrava com vibe.
-- ❌ Inventar nome de env var — catálogo ou doc oficial, senão o gate do /goal quebra à toa.
-- ❌ Cravar preço/limite de free-tier — envelhece e vira mentira; linke a pricing.
-- ❌ Dez perguntas de uma vez, ou pergunta que o código responde.
-- ❌ Listar opções sem recomendar — você é o engenheiro, não um menu.
-- ❌ `.katana/plans/` para passo S/M — plano detalhado é exceção de triagem L, não etapa do fluxo.
-- ❌ Recriar ROADMAP existente ao receber feature nova — adiciona passos, preserva numeração e histórico.
-
-## Próxima ação
-
-Mapa fechado → **/goal 1..N**. Quebrou algo no caminho? **/fix**.
+Não crie BRIEF, PLAN, STATUS, LOG, state JSON ou backlog paralelo.
