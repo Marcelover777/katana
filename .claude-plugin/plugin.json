@@ -1,9 +1,20 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "katana",
-  "version": "1.0.0",
-  "description": "3 comandos de Claude Code (PT-BR) para o dev solo: /plan desenha o mapa (ROADMAP executável). /goal dirige até o fim — commita, abre PR, se auto-revisa e mergeia; só para se faltar chave ou for perigoso. /fix quando quebra. Sucessor do Forger: 17 comandos viraram 3.",
+  "displayName": "Katana",
+  "version": "2.0.0",
+  "description": "Duas skills PT-BR para planejar em um ROADMAP e executar, diagnosticar e corrigir com verificação real.",
   "author": {
     "name": "Marcelover777",
     "url": "https://github.com/Marcelover777"
-  }
+  },
+  "homepage": "https://github.com/Marcelover777/katana",
+  "repository": "https://github.com/Marcelover777/katana",
+  "license": "MIT",
+  "keywords": [
+    "solo-development",
+    "planning",
+    "verification",
+    "pt-br"
+  ]
 }

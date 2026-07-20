@@ -1,237 +1,204 @@
 #!/usr/bin/env node
-// Katana — validador de integridade do repo.
-//
-// Zero dependências (só built-ins do Node). O guarda-corpo anti-inchaço É este
-// arquivo: exatamente 3 skills, description ≤280 chars, SKILL.md ≤250 linhas.
-// Quem quiser um 4º comando vai ter que editar o validador — e explicar por quê.
-//
-//   node scripts/validate.mjs
-//
-// Saída: lista de erros `arquivo:linha: mensagem`. Exit 1 se houver erro.
-// CRLF/BOM-tolerante na leitura (lição do Forger: autocrlf do Windows quebrava
-// o parse de frontmatter no checkout).
 
-import { readFileSync, readdirSync, existsSync, statSync, lstatSync } from "node:fs";
-import { join, dirname } from "node:path";
+import { existsSync, lstatSync, readFileSync, readdirSync } from "node:fs";
+import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
-import { spawnSync } from "node:child_process";
 
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const EXPECTED_SKILLS = ["goal", "plan"];
+const EXPECTED_SKILL_FILES = new Set([
+  "skills/goal/SKILL.md",
+  "skills/plan/SKILL.md",
+  "skills/plan/ROADMAP-TEMPLATE.md",
+]);
+const MAX_SKILL_LINES = 140;
 const errors = [];
-const fail = (file, line, msg) =>
-  errors.push(line ? `${file}:${line}: ${msg}` : `${file}: ${msg}`);
 
-const abs = (p) => join(ROOT, p);
-const has = (p) => existsSync(abs(p));
-const read = (p) => readFileSync(abs(p), "utf8").replace(/^\uFEFF/, "");
-const lines = (txt) => txt.replace(/\r?\n$/, "").split(/\r?\n/);
-const lineOf = (txt, needle) => {
-  const i = lines(txt).findIndex((l) => l.includes(needle));
-  return i === -1 ? 0 : i + 1;
-};
+const rel = (path) => relative(ROOT, path).replaceAll("\\", "/");
+const abs = (path) => resolve(ROOT, path);
+const has = (path) => existsSync(abs(path));
+const read = (path) => readFileSync(abs(path), "utf8").replace(/^\uFEFF/, "");
+const lines = (text) => text.replace(/\r?\n$/, "").split(/\r?\n/);
+const fail = (path, message, line = 0) =>
+  errors.push(`${path}${line ? `:${line}` : ""}: ${message}`);
 
-// --- 1. Exatamente 3 skills: plan, go, fix ----------------------------------
-// A contagem é o contrato. Não existe "só mais um comando".
-const EXPECTED_SKILLS = ["fix", "goal", "plan"];
+function* walk(dir = ROOT) {
+  for (const name of readdirSync(dir)) {
+    if (name === ".git" || name === "node_modules") continue;
+    const path = join(dir, name);
+    const stat = lstatSync(path);
+    if (stat.isSymbolicLink()) continue;
+    if (stat.isDirectory()) yield* walk(path);
+    else yield path;
+  }
+}
+
+function parseFrontmatter(text) {
+  const match = text.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/);
+  if (!match) return null;
+  const result = {};
+  for (const row of match[1].split(/\r?\n/)) {
+    const pair = row.match(/^([a-zA-Z][\w-]*):\s*(.*)$/);
+    if (!pair) continue;
+    result[pair[1]] = pair[2].trim().replace(/^("|')|("|')$/g, "");
+  }
+  return result;
+}
+
+// Arquivos essenciais e superfícies removidas na v2.
+for (const path of [
+  "README.md",
+  "CHANGELOG.md",
+  "LICENSE",
+  ".claude-plugin/plugin.json",
+  ".claude-plugin/marketplace.json",
+  "skills/plan/ROADMAP-TEMPLATE.md",
+]) {
+  if (!has(path)) fail(path, "arquivo obrigatório ausente");
+}
+
+for (const path of [
+  "hooks",
+  "examples",
+  "assets",
+  "skills/fix",
+  "README.en.md",
+  "install.sh",
+  "install.ps1",
+  "scripts/goal.ps1",
+]) {
+  if (has(path)) fail(path, "superfície legada reintroduzida; mantenha a v2 Markdown-only");
+}
+
+// Exatamente duas skills, com invocação explícita e tamanho limitado.
 let skills = [];
 if (!has("skills")) {
-  fail("skills", 0, "diretório ausente");
+  fail("skills", "diretório ausente");
 } else {
   skills = readdirSync(abs("skills"))
-    .filter((n) => !n.startsWith(".") && statSync(abs(join("skills", n))).isDirectory())
+    .filter((name) => lstatSync(abs(`skills/${name}`)).isDirectory())
     .sort();
-  if (JSON.stringify(skills) !== JSON.stringify(EXPECTED_SKILLS))
-    fail(
-      "skills",
-      0,
-      `esperado exatamente {plan, go, fix}; encontrado {${skills.join(", ") || "nada"}}. ` +
-        `3 comandos é regra dura — mecanismo novo entra DENTRO de /plan, /goal ou /fix, não como comando.`,
-    );
-}
-
-// --- 2–4. Cada SKILL.md: frontmatter, tamanho, links ------------------------
-const parseFrontmatter = (txt) => {
-  const m = txt.match(/^---\r?\n([\s\S]*?)\r?\n---/);
-  if (!m) return null;
-  const fm = {};
-  for (const line of m[1].split(/\r?\n/)) {
-    const kv = line.match(/^([a-zA-Z_-]+):\s*(.*)$/);
-    if (kv) fm[kv[1]] = kv[2].trim().replace(/^["']|["']$/g, "");
+  if (JSON.stringify(skills) !== JSON.stringify(EXPECTED_SKILLS)) {
+    fail("skills", `esperado {${EXPECTED_SKILLS.join(", ")}}; encontrado {${skills.join(", ")}}`);
   }
-  return fm;
-};
-
-const MAX_DESC = 280; // custo de contexto permanente — cada char cobra em toda sessão
-const MAX_LINES = 250; // conteúdo extenso vai para references/*.md, lido on-demand
+}
 
 for (const skill of skills) {
-  const rel = join("skills", skill, "SKILL.md").replace(/\\/g, "/");
-  if (!has(rel)) {
-    fail(rel, 0, "ausente");
+  const path = `skills/${skill}/SKILL.md`;
+  if (!has(path)) {
+    fail(path, "arquivo ausente");
     continue;
   }
-  const txt = read(rel);
-
-  // 2. Frontmatter name + description (≤280).
-  const fm = parseFrontmatter(txt);
+  const text = read(path);
+  const fm = parseFrontmatter(text);
   if (!fm) {
-    fail(rel, 1, "sem frontmatter YAML (---)");
-  } else {
-    if (!fm.name) fail(rel, 1, "frontmatter sem 'name'");
-    else if (fm.name !== skill)
-      fail(rel, lineOf(txt, "name:"), `name '${fm.name}' != diretório '${skill}'`);
-    if (!fm.description || fm.description.length < 20)
-      fail(rel, lineOf(txt, "description:") || 1, "'description' ausente ou curta demais");
-    else if (fm.description.length > MAX_DESC)
-      fail(
-        rel,
-        lineOf(txt, "description:"),
-        `description com ${fm.description.length} chars (máx ${MAX_DESC}). Corte — isso cobra contexto em TODA sessão.`,
-      );
-  }
-
-  // 3. ≤250 linhas.
-  const n = lines(txt).length;
-  if (n > MAX_LINES)
-    fail(rel, MAX_LINES + 1, `${n} linhas (máx ${MAX_LINES}). Mova o excedente para references/*.md.`);
-
-  // 4. Todo link relativo aponta para arquivo que existe.
-  for (const m of txt.matchAll(/\]\(([^)\s]+)\)/g)) {
-    let ref = m[1];
-    if (/^[a-z][a-z0-9+.-]*:/i.test(ref)) continue; // http:, https:, mailto:
-    if (ref.startsWith("#")) continue; // âncora interna
-    if (/[<>]/.test(ref)) continue; // placeholder de template
-    ref = ref.split("#")[0];
-    if (!ref) continue;
-    const target = ref.startsWith("/") ? ref.slice(1) : join("skills", skill, ref);
-    if (!has(target)) {
-      const ln = lines(txt).findIndex((l) => l.includes(`(${m[1]})`)) + 1;
-      fail(rel, ln, `link relativo para arquivo inexistente: '${m[1]}'`);
-    }
-  }
-}
-
-// --- 5. Os 3 comandos aparecem nas superfícies públicas ---------------------
-const COMMANDS = ["/plan", "/goal", "/fix"];
-for (const surface of ["README.md", "README.en.md", ".claude-plugin/plugin.json"]) {
-  if (!has(surface)) {
-    fail(surface, 0, "ausente");
+    fail(path, "frontmatter YAML ausente", 1);
     continue;
   }
-  const txt = read(surface);
-  for (const cmd of COMMANDS)
-    if (!txt.includes(cmd)) fail(surface, 0, `não menciona '${cmd}'`);
+  if (fm.name !== skill) fail(path, `name '${fm.name || ""}' não corresponde ao diretório '${skill}'`, 2);
+  if (!fm.description || fm.description.length < 40 || fm.description.length > 400) {
+    fail(path, "description deve ter entre 40 e 400 caracteres");
+  }
+  if (fm["disable-model-invocation"] !== "true") {
+    fail(path, "workflow com efeitos deve exigir invocação explícita");
+  }
+  if (!fm["argument-hint"]) fail(path, "argument-hint ausente");
+  const count = lines(text).length;
+  if (count > MAX_SKILL_LINES) fail(path, `${count} linhas; máximo ${MAX_SKILL_LINES}`);
 }
 
-// --- 5b. Manifests do plugin coerentes ---------------------------------------
-let pluginName = null;
-if (has(".claude-plugin/plugin.json")) {
-  try {
-    const plugin = JSON.parse(read(".claude-plugin/plugin.json"));
-    pluginName = plugin.name;
-    if (plugin.name !== "katana") fail(".claude-plugin/plugin.json", 0, `name '${plugin.name}' != 'katana'`);
-    if (!plugin.description) fail(".claude-plugin/plugin.json", 0, "sem 'description'");
-  } catch (e) {
-    fail(".claude-plugin/plugin.json", 0, `JSON inválido — ${e.message}`);
-  }
+// Manifestos coerentes entre plugin e marketplace.
+let plugin;
+let marketplace;
+try {
+  plugin = JSON.parse(read(".claude-plugin/plugin.json"));
+} catch (error) {
+  fail(".claude-plugin/plugin.json", `JSON inválido: ${error.message}`);
 }
-if (!has(".claude-plugin/marketplace.json")) {
-  fail(".claude-plugin/marketplace.json", 0, "ausente");
-} else {
-  try {
-    const mkt = JSON.parse(read(".claude-plugin/marketplace.json"));
-    const names = (mkt.plugins || []).map((p) => p.name);
-    if (pluginName && !names.includes(pluginName))
-      fail(".claude-plugin/marketplace.json", 0, `nenhum plugin com name '${pluginName}'`);
-  } catch (e) {
-    fail(".claude-plugin/marketplace.json", 0, `JSON inválido — ${e.message}`);
+try {
+  marketplace = JSON.parse(read(".claude-plugin/marketplace.json"));
+} catch (error) {
+  fail(".claude-plugin/marketplace.json", `JSON inválido: ${error.message}`);
+}
+
+if (plugin) {
+  if (plugin.name !== "katana") fail(".claude-plugin/plugin.json", "name deve ser 'katana'");
+  if (!/^\d+\.\d+\.\d+$/.test(plugin.version || "")) {
+    fail(".claude-plugin/plugin.json", "version deve usar SemVer");
+  }
+  for (const field of ["description", "repository", "license"]) {
+    if (!plugin[field]) fail(".claude-plugin/plugin.json", `campo '${field}' ausente`);
   }
 }
 
-// --- 6. Hooks existem e parseiam ---------------------------------------------
-const HOOKS = ["katana-session-start.js", "katana-continue.js", "katana-guard.js"];
-if (!has("hooks")) {
-  fail("hooks", 0, "diretório ausente");
-} else {
-  for (const h of HOOKS) if (!has(join("hooks", h))) fail(`hooks/${h}`, 0, "ausente");
-  for (const f of readdirSync(abs("hooks")).filter((n) => n.endsWith(".js"))) {
-    const rel = `hooks/${f}`;
-    const r = spawnSync(process.execPath, ["--check", abs(rel)], { encoding: "utf8" });
-    if (r.status !== 0) {
-      const first = (r.stderr || "erro desconhecido").split(/\r?\n/).find((l) => l.trim()) || "";
-      fail(rel, 0, `não parseia (node --check): ${first.trim()}`);
+if (marketplace) {
+  const entries = Array.isArray(marketplace.plugins) ? marketplace.plugins : [];
+  const entry = entries.find((item) => item.name === "katana");
+  if (!entry) fail(".claude-plugin/marketplace.json", "entrada do plugin 'katana' ausente");
+  else {
+    if (entry.source !== "./") fail(".claude-plugin/marketplace.json", "source deve ser './'");
+    if (entry.strict !== true) fail(".claude-plugin/marketplace.json", "strict deve ser true");
+    if (plugin && entry.version !== plugin.version) {
+      fail(".claude-plugin/marketplace.json", `version '${entry.version}' difere do plugin '${plugin.version}'`);
     }
   }
 }
 
-// --- 7. state.json de exemplo: JSON válido com o schema mínimo ---------------
-// É o contrato que os hooks e o /goal resume leem cru (JSON.parse sem perdão).
-const STATE = "examples/forecast-os/.katana/state.json";
-if (!has(STATE)) {
-  fail(STATE, 0, "ausente — o exemplo É a documentação viva");
-} else {
-  const raw = readFileSync(abs(STATE), "utf8");
-  if (raw.charCodeAt(0) === 0xfeff)
-    fail(STATE, 1, "BOM detectado — state.json é UTF-8 SEM BOM (hooks fazem JSON.parse cru)");
-  try {
-    const st = JSON.parse(raw.replace(/^\uFEFF/, ""));
-    for (const field of ["version", "range", "current", "status", "steps"])
-      if (!(field in st)) fail(STATE, 1, `campo obrigatório ausente: '${field}'`);
-    if ("range" in st && (!Array.isArray(st.range) || st.range.length !== 2))
-      fail(STATE, 1, "'range' deve ser array [N, M]");
-    const STATUSES = new Set(["running", "done", "hard_stop", "stopped"]);
-    if ("status" in st && !STATUSES.has(st.status))
-      fail(STATE, 1, `status '${st.status}' inválido (${[...STATUSES].join("|")})`);
-    if ("steps" in st && (typeof st.steps !== "object" || st.steps === null || Array.isArray(st.steps)))
-      fail(STATE, 1, "'steps' deve ser objeto {K: {...}}");
-  } catch (e) {
-    fail(STATE, 1, `JSON inválido — ${e.message}`);
+// A documentação pública usa o namespace real de plugins.
+if (has("README.md")) {
+  const readme = read("README.md");
+  for (const skill of EXPECTED_SKILLS) {
+    if (!readme.includes(`/katana:${skill}`)) fail("README.md", `não documenta '/katana:${skill}'`);
   }
 }
 
-// --- 8. Rebrand limpo: nenhum resto das gerações anteriores ------------------
-// Tokens montados por concatenação para este arquivo não se auto-acusar.
-const BANNED = [
-  "CRUCIBLE" + "_",
-  "FORGER" + "_",
-  ".for" + "ge/",
+// Links Markdown relativos devem resolver e o snapshot não pode carregar runtime
+// removido nem conteúdo de um produto usado como exemplo durante a v1.
+const legacyTokens = [".katana/state.json", ".katana/LOG.md", "/goal setup", "scripts/goal.ps1"];
+const removedCommand = "/katana:" + "fix";
+const projectLeaks = [
+  ["bo", "vx"].join(""),
+  ["forecast", "-os"].join(""),
+  ["forecast", " os"].join(""),
+  ["boi", "_", "gordo"].join(""),
 ];
-// CHANGELOG e READMEs contam a história da linhagem — únicos com passe livre.
-const REBRAND_EXEMPT = new Set(["CHANGELOG.md", "README.md", "README.en.md"]);
-const SKIP_DIRS = new Set([".git", "node_modules"]);
-
-function* walk(rel) {
-  for (const name of readdirSync(abs(rel || "."))) {
-    const r = rel ? `${rel}/${name}` : name;
-    const st = lstatSync(abs(r));
-    if (st.isSymbolicLink()) continue;
-    if (st.isDirectory()) {
-      if (!SKIP_DIRS.has(name)) yield* walk(r);
-    } else {
-      yield r;
+for (const path of walk()) {
+  const pathRel = rel(path);
+  if (pathRel.startsWith("skills/") && !EXPECTED_SKILL_FILES.has(pathRel)) {
+    fail(pathRel, "arquivo de skill não previsto; justifique a nova superfície no validador");
+  }
+  const buffer = readFileSync(path);
+  if (buffer.includes(0)) continue;
+  const text = buffer.toString("utf8");
+  const lower = text.toLowerCase();
+  if (text.includes(removedCommand)) fail(pathRel, `comando removido ainda documentado: '${removedCommand}'`);
+  for (const token of projectLeaks) {
+    if (lower.includes(token)) fail(pathRel, "conteúdo específico de produto detectado");
+  }
+  if (pathRel.startsWith("skills/")) {
+    for (const token of legacyTokens) {
+      if (text.includes(token)) fail(pathRel, `referência à superfície removida: '${token}'`);
+    }
+  }
+  if (!pathRel.endsWith(".md")) continue;
+  for (const match of text.matchAll(/\]\(([^)\s]+)\)/g)) {
+    const target = match[1].split("#")[0];
+    if (!target || target.startsWith("#") || /^[a-z][a-z0-9+.-]*:/i.test(target)) continue;
+    if (target.includes("<") || target.includes(">")) continue;
+    const resolved = resolve(dirname(path), target);
+    const fromRoot = relative(ROOT, resolved);
+    const outsideRoot = fromRoot === ".." || fromRoot.startsWith(`..${sep}`) || isAbsolute(fromRoot);
+    if (outsideRoot || !existsSync(resolved)) {
+      const line = text.slice(0, match.index).split(/\r?\n/).length;
+      fail(pathRel, `link relativo inexistente: '${match[1]}'`, line);
     }
   }
 }
 
-for (const rel of walk("")) {
-  if (REBRAND_EXEMPT.has(rel)) continue;
-  const buf = readFileSync(abs(rel));
-  if (buf.includes(0)) continue; // binário
-  const txt = buf.toString("utf8");
-  for (const token of BANNED) {
-    if (!txt.includes(token)) continue;
-    const ln = lines(txt).findIndex((l) => l.includes(token)) + 1;
-    fail(rel, ln, `resto de rebrand: contém '${token}'`);
-  }
-}
-
-// --- 9. Âncoras do repo -------------------------------------------------------
-for (const f of ["LICENSE", "CHANGELOG.md"]) if (!has(f)) fail(f, 0, "ausente");
-
-// --- Resultado ----------------------------------------------------------------
 if (errors.length) {
-  console.error(`\n✗ Katana — ${errors.length} problema(s):\n`);
-  for (const e of errors) console.error(`  - ${e}`);
+  console.error(`\n✗ Katana: ${errors.length} problema(s)\n`);
+  for (const error of errors) console.error(`- ${error}`);
   process.exit(1);
 }
-console.log("✓ Katana OK — 3 comandos, superfícies coerentes, hooks parseiam, rebrand limpo.");
+
+console.log("✓ Katana v2: 2 skills explícitas, 1 roadmap, sem runtime ou conteúdo de produto legado.");

@@ -1,21 +1,11 @@
-# Dependências (o repo é zero-dep por design — se isto aparecer, algo errou)
 node_modules/
 
-# Ambiente / segredos — nunca versionar
+# Segredos e configuração local
 .env
 .env.*
 !.env.example
 
-# Estado transitório de run da própria Katana (dogfooding no repo).
-# NOTA: examples/**/.katana/state.json e LOG.md são material de demonstração
-# e DEVEM ser versionados — só tmp/ fica de fora.
-**/.katana/tmp/
-
-# Locks de teste do runner headless (goal.ps1)
-*.lock
-
-# Logs / SO / editores
-*.log
+# SO e editores
 .DS_Store
 Thumbs.db
 .idea/

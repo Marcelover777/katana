@@ -1,66 +1,59 @@
-# ROADMAP.md — o mapa que o /goal executa
+# Template de ROADMAP.md
 
-Salvar na **raiz** do projeto. Escrito pelo /plan; executado pelo /goal (cada passo vira um PR "Etapa NN — título"). O `[ ]` no título do passo é a verdade do progresso — **só o /goal marca `[x]`**, com Aceite verde; o `[x]` só chega ao main via merge do PR da etapa (o /goal o commita na própria branch, nunca direto em main). Passos inline: não existe pasta de detalhes separada.
-
----
+Salve na raiz do projeto. O checkbox no título do passo é a única marca de
+progresso: `[ ]` pendente, `[x]` verificado.
 
 ```markdown
 ---
-project: <kebab-case-slug>
-created: YYYY-MM-DD
-status: em-andamento   # em-andamento | concluido
+project: <slug-do-projeto>
+updated: YYYY-MM-DD
 ---
 
-# ROADMAP — <Nome do projeto>
+# ROADMAP — <nome do projeto ou entrega>
 
-## O produto em 1 linha
+## Objetivo
 
-<O que é e o que a versão completa entrega. Stack e porquês vivem no CLAUDE.md § Stack.>
+<Uma ou duas frases descrevendo o resultado final observável.>
 
-## 01 — <verbo + objeto> [ ]
-Objetivo observável: <algo no ar, sem precisar de chave nenhuma>.
-Gate: Nenhum.
+## Fora de escopo
+
+- <limite importante que evita deriva>
+
+## 01 — <verbo + resultado> [ ]
+
+Resultado: <o que passa a ser observável quando este passo termina>.
 Depende de: Nenhum.
-Tasks:
-- [ ] <task concreta vertical>
-- [ ] <task>
-Aceite:
-- [ ] `<comando/grep/test executável>`
-Demo (60s): <passo a passo>
+Bloqueios: Nenhum.
 
-## 02 — Login [ ]
-Objetivo observável: <o que dá pra VER/FAZER depois>.
-Gate: SUPABASE_URL, SUPABASE_ANON_KEY.
+Fazer:
+- <mudança concreta e delimitada>
+- <segunda mudança, somente se necessária>
+
+Verificar:
+- `<comando existente que termina sozinho>`
+- `<outro comando ou resultado exato, se necessário>`
+
+Revisar manualmente:
+- <somente quando não houver substituto mecânico; remova a seção se vazia>
+
+## 02 — <verbo + resultado> [ ]
+
+Resultado: <comportamento observável>.
 Depende de: 01.
-Tasks:
-- [ ] <task concreta vertical>
-- [ ] <task>
-Aceite:
-- [ ] `<comando/grep/test executável>`
-- [ ] `npm run build` verde
-Demo (60s): <passo a passo>
+Bloqueios: `<nome da entrada externa>` — <onde o usuário a obtém>; ou `Nenhum`.
 
-## 03 — <passo L, multi-sessão> [ ]
-Objetivo observável: <...>.
-Gate: Nenhum.
-Depende de: 02.
-Plano: .katana/plans/03-<slug>.md
-Tasks:
-- [ ] <resumo — as tasks detalhadas vivem no plano>
-Aceite:
-- [ ] `<comando>`
-Demo (60s): <...>
+Fazer:
+- <mudança concreta>
+
+Verificar:
+- `<comando>`
 ```
 
----
+## Regras
 
-## Regras (quem escreve obedece; quem executa confia)
-
-- **Passo = fatia demoável, não micro-tarefa.** Uma feature ponta a ponta (schema → API → UI → teste), ~5-12 passos no total. Vertical, nunca por camada.
-- **Numeração estável.** Nunca renumere um passo criado — commits, PRs e o LOG referenciam o número. Passo novo SEMPRE entra no fim da fila, com o próximo número; a ordem real de execução é expressa via `Depende de:`.
-- **Primeiro passo sem gate.** Algo visível antes de qualquer chave — motivação antes de fricção.
-- **Gate = nomes exatos de env var**, separados por vírgula, ou `Nenhum`. Nomes do catálogo (`references/env-vars.md`) ou da doc oficial. O /goal coleta os gates da faixa inteira e confere o `.env` de uma vez, no preflight.
-- **Aceite mecânico.** Comando/grep/test que roda sem julgamento humano. É o que destrava o merge — Aceite fraco = lixo verde mergeado.
-- **Demo (60s).** Se não dá pra escrever, o passo não tem pronto observável.
-- **Fila única.** Follow-up, bug achado depois, ideia nova: vira passo novo AQUI. Não existe backlog paralelo, icebox nem segunda lista.
-- **`Plano:` só em passo L.** S/M vivem inteiros neste arquivo.
+- Passos são fatias entregáveis, não fases por camada.
+- Numeração é estável; trabalho novo recebe o próximo número.
+- Só marque `[x]` depois de executar todas as verificações do passo.
+- Registre nomes de configuração, nunca valores secretos.
+- Comandos de verificação devem existir ou o passo deve incluir sua criação.
+- Se um passo não couber numa sessão, divida-o; não crie um segundo plano.
